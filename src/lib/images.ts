@@ -2,9 +2,9 @@
 // Centralized image registry. Put your pngs in: ReArm - Luxury High-Tech Prosthetics_files/assets/
 
 /** Catalog / Configurator families */
-import HL_FAMILY from '../../assets/hl-family.png';
-import RL_FAMILY from '../../assets/rl-family.png';
-import SL_FAMILY from '../../assets/sl-family.png';
+import HL_FAMILY from '../assets/hl-family.png';
+import RL_FAMILY from '../assets/rl-family.png';
+import SL_FAMILY from '../assets/sl-family.png';
 
 /** Series + Generation previews */
 import HL_G1 from '../../assets/hl-g1.png';
