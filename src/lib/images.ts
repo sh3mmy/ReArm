@@ -7,32 +7,32 @@ import RL_FAMILY from '../assets/rl-family.png';
 import SL_FAMILY from '../assets/sl-family.png';
 
 /** Series + Generation previews */
-import HL_G1 from '../../assets/hl-g1.png';
-import HL_G2 from '../../assets/hl-g2.png';
-import HL_G3 from '../../assets/hl-g3.png';
-import RL_G1 from '../../assets/rl-g1.png';
-import RL_G2 from '../../assets/rl-g2.png';
-import SL_G2 from '../../assets/sl-g2.png';
-import SL_G3 from '../../assets/sl-g3.png';
+import HL_G1 from '../assets/hl-g1.png';
+import HL_G2 from '../assets/hl-g2.png';
+import HL_G3 from '../assets/hl-g3.png';
+import RL_G1 from '../assets/rl-g1.png';
+import RL_G2 from '../assets/rl-g2.png';
+import SL_G2 from '../assets/sl-g2.png';
+import SL_G3 from '../assets/sl-g3.png';
 
 /** Site heroes */
-import HERO_HOME from '../../assets/hero-home.png';
-import HERO_FUTURE from '../../assets/hero-future.png';
-import HERO_ENGINEERING from '../../assets/hero-engineering.png';
+import HERO_HOME from '../assets/hero-home.png';
+import HERO_FUTURE from '../assets/hero-future.png';
+import HERO_ENGINEERING from '../assets/hero-engineering.png';
 
 /** Home gallery */
-import HOME_G1 from '../../assets/gallery-home-1.png';
-import HOME_G2 from '../../assets/gallery-home-2.png';
-import HOME_G3 from '../../assets/gallery-home-3.png';
-import HOME_G4 from '../../assets/gallery-home-4.png';
+import HOME_G1 from '../assets/gallery-home-1.png';
+import HOME_G2 from '../assets/gallery-home-2.png';
+import HOME_G3 from '../assets/gallery-home-3.png';
+import HOME_G4 from '../assets/gallery-home-4.png';
 
 /** Engineering page gallery */
-import ENG_LAB1 from '../../assets/engineering-lab-1.png';
-import ENG_LAB2 from '../../assets/engineering-lab-2.png';
-import ENG_LAB3 from '../../assets/engineering-lab-3.png';
+import ENG_LAB1 from '../assets/engineering-lab-1.png';
+import ENG_LAB2 from '../assets/engineering-lab-2.png';
+import ENG_LAB3 from '../assets/engineering-lab-3.png';
 
 /** Booking */
-import CLINIC_BG from '../../assets/clinic-bg.png';
+import CLINIC_BG from '../assets/clinic-bg.png';
 
 export const CARD_IMAGE = {
   HL: HL_FAMILY,
