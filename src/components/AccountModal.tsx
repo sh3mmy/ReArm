@@ -1,7 +1,7 @@
-// src/components/AccountModal.tsx
 import React, { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import { X, ArrowRight } from "lucide-react";
 
 type Props = {
   open: boolean;
@@ -28,7 +28,6 @@ const AccountModal: React.FC<Props> = ({ open, onClose }) => {
 
   const panelRef = useRef<HTMLDivElement | null>(null);
 
-  // Close on outside click
   useEffect(() => {
     if (!open) return;
     const onDown = (e: PointerEvent) => {
@@ -68,36 +67,37 @@ const AccountModal: React.FC<Props> = ({ open, onClose }) => {
 
   return (
     <>
-      {/* Backdrop */}
       <div className="fixed inset-0 bg-black/60 backdrop-blur-sm" style={{ zIndex: 1000 }} />
 
-      {/* Panel */}
       <div
         ref={panelRef}
-        className="fixed right-0 top-0 h-screen w-full max-w-md bg-gradient-to-b from-black to-zinc-900 border-l border-white/10 p-6 overflow-y-auto"
+        className="fixed right-0 top-0 h-screen w-full max-w-md bg-neutral-950 border-l border-white/[0.08] p-6 overflow-y-auto"
         style={{ zIndex: 1001 }}
         role="dialog"
         aria-modal="true"
         aria-label="Account"
       >
-        <div className="flex items-center justify-between mb-6">
-          <div className="text-white/90 text-lg">
-            {user ? "My Account" : mode === "signin" ? "Sign in to your account" : "Create your account"}
+        <div className="flex items-center justify-between mb-8">
+          <div className="text-white text-lg font-medium tracking-tight">
+            {user ? "My Account" : mode === "signin" ? "Sign In" : "Create Account"}
           </div>
-          <button className="text-white/70 hover:text-white" onClick={onClose} aria-label="Close">
-            ✕
+          <button
+            className="w-10 h-10 rounded-full border border-white/[0.08] flex items-center justify-center text-neutral-400 hover:text-white hover:border-white/20 transition-all duration-300"
+            onClick={onClose}
+            aria-label="Close"
+          >
+            <X size={18} />
           </button>
         </div>
 
         {!user ? (
           <>
-            {/* Auth form */}
-            <form onSubmit={submit} className="space-y-4">
+            <form onSubmit={submit} className="space-y-5">
               {mode === "signup" && (
                 <label className="block">
-                  <span className="text-white/70 text-sm">Full name</span>
+                  <span className="text-label text-neutral-500 mb-2 block">Full name</span>
                   <input
-                    className="mt-1 w-full rounded-xl bg-black/40 border border-white/15 px-3 py-2 text-white outline-none focus:border-white/40"
+                    className="w-full rounded-2xl bg-white/[0.02] border border-white/[0.06] px-4 py-3 text-white placeholder-neutral-600 outline-none focus:border-white/20 focus:bg-white/[0.03] transition-all duration-300 text-sm"
                     value={name}
                     onChange={(e) => setName(e.target.value)}
                     placeholder="Jane Appleseed"
@@ -106,10 +106,10 @@ const AccountModal: React.FC<Props> = ({ open, onClose }) => {
               )}
 
               <label className="block">
-                <span className="text-white/70 text-sm">Email</span>
+                <span className="text-label text-neutral-500 mb-2 block">Email</span>
                 <input
                   type="email"
-                  className="mt-1 w-full rounded-xl bg-black/40 border border-white/15 px-3 py-2 text-white outline-none focus:border-white/40"
+                  className="w-full rounded-2xl bg-white/[0.02] border border-white/[0.06] px-4 py-3 text-white placeholder-neutral-600 outline-none focus:border-white/20 focus:bg-white/[0.03] transition-all duration-300 text-sm"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="jane@example.com"
@@ -117,10 +117,10 @@ const AccountModal: React.FC<Props> = ({ open, onClose }) => {
               </label>
 
               <label className="block">
-                <span className="text-white/70 text-sm">Password</span>
+                <span className="text-label text-neutral-500 mb-2 block">Password</span>
                 <input
                   type="password"
-                  className="mt-1 w-full rounded-xl bg-black/40 border border-white/15 px-3 py-2 text-white outline-none focus:border-white/40"
+                  className="w-full rounded-2xl bg-white/[0.02] border border-white/[0.06] px-4 py-3 text-white placeholder-neutral-600 outline-none focus:border-white/20 focus:bg-white/[0.03] transition-all duration-300 text-sm"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="••••••••"
@@ -132,26 +132,24 @@ const AccountModal: React.FC<Props> = ({ open, onClose }) => {
               <button
                 type="submit"
                 disabled={busy || !email || !password || (mode === "signup" && !name)}
-                className={`w-full mt-2 rounded-xl px-4 py-2 transition ${
+                className={`w-full rounded-full px-6 py-3 font-medium text-sm transition-all duration-300 ${
                   busy || !email || !password || (mode === "signup" && !name)
-                    ? "bg-white/10 text-white/40"
-                    : "bg-white text-black hover:opacity-90"
+                    ? "bg-white/[0.05] text-neutral-600 border border-white/[0.06]"
+                    : "bg-white text-neutral-950 hover:bg-neutral-100"
                 }`}
               >
                 {mode === "signin" ? "Sign In" : "Create Account"}
               </button>
             </form>
 
-            {/* Divider */}
-            <div className="relative my-4">
-              <div className="h-px bg-white/10" />
+            <div className="relative my-6">
+              <div className="h-px bg-white/[0.06]" />
               <div className="absolute inset-0 -top-3 text-center">
-                <span className="px-2 text-xs text-white/50 bg-zinc-900/50">or</span>
+                <span className="px-3 text-xs text-neutral-600 bg-neutral-950">or</span>
               </div>
             </div>
 
-            {/* Providers + Dev */}
-            <div className="grid gap-2">
+            <div className="space-y-3">
               <button
                 onClick={async () => {
                   setBusy(true);
@@ -162,9 +160,9 @@ const AccountModal: React.FC<Props> = ({ open, onClose }) => {
                     setBusy(false);
                   }
                 }}
-                className="w-full rounded-xl px-4 py-2 border border-white/20 text-white/90 hover:bg-white/5"
+                className="w-full rounded-full px-6 py-3 border border-white/[0.08] text-neutral-300 hover:text-white hover:border-white/20 transition-all duration-300 text-sm font-medium"
               >
-                Continue with Google (mock)
+                Continue with Google
               </button>
 
               <button
@@ -172,26 +170,25 @@ const AccountModal: React.FC<Props> = ({ open, onClose }) => {
                   devSkipLogin();
                   onClose();
                 }}
-                className="w-full rounded-xl px-4 py-2 border border-white/20 text-white/90 hover:bg-white/5"
+                className="w-full rounded-full px-6 py-3 border border-white/[0.08] text-neutral-300 hover:text-white hover:border-white/20 transition-all duration-300 text-sm font-medium"
                 title="Development shortcut – bypass authentication"
               >
                 Skip login (dev)
               </button>
             </div>
 
-            {/* Switch */}
-            <div className="text-center text-sm text-white/60 mt-4">
+            <div className="text-center text-sm text-neutral-500 mt-6">
               {mode === "signin" ? (
                 <>
-                  Don’t have an account?{" "}
-                  <button onClick={() => setMode("signup")} className="underline hover:text-white">
+                  Don't have an account?{" "}
+                  <button onClick={() => setMode("signup")} className="text-white hover:underline font-medium">
                     Create one
                   </button>
                 </>
               ) : (
                 <>
                   Already have an account?{" "}
-                  <button onClick={() => setMode("signin")} className="underline hover:text-white">
+                  <button onClick={() => setMode("signin")} className="text-white hover:underline font-medium">
                     Sign in
                   </button>
                 </>
@@ -199,25 +196,25 @@ const AccountModal: React.FC<Props> = ({ open, onClose }) => {
             </div>
           </>
         ) : (
-          // Signed-in view
           <div className="space-y-6">
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-4">
               <img
                 src={user.photoURL || "https://api.dicebear.com/8.x/identicon/svg?seed=ReArm"}
                 alt=""
-                className="w-10 h-10 rounded-full border border-white/20"
+                className="w-12 h-12 rounded-full border border-white/[0.08]"
               />
               <div>
-                <div className="text-white">{user.displayName}</div>
-                <div className="text-white/70 text-sm">{user.email}</div>
+                <div className="text-white font-medium">{user.displayName}</div>
+                <div className="text-neutral-500 text-sm">{user.email}</div>
               </div>
             </div>
 
             <button
               onClick={goProfile}
-              className="w-full rounded-xl px-4 py-2 border border-white/20 text-white/90 hover:bg-white/5"
+              className="w-full rounded-full px-6 py-3 border border-white/[0.08] text-white hover:border-white/20 transition-all duration-300 text-sm font-medium flex items-center justify-center gap-2 group"
             >
               Open Profile
+              <ArrowRight size={14} className="transition-transform duration-300 group-hover:translate-x-0.5" />
             </button>
 
             <button
@@ -225,7 +222,7 @@ const AccountModal: React.FC<Props> = ({ open, onClose }) => {
                 signOut();
                 onClose();
               }}
-              className="w-full rounded-xl px-4 py-2 border border-white/20 text-white/90 hover:bg-white/5"
+              className="w-full rounded-full px-6 py-3 border border-white/[0.08] text-neutral-400 hover:text-white hover:border-white/20 transition-all duration-300 text-sm font-medium"
             >
               Sign out
             </button>

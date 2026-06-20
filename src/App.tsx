@@ -14,7 +14,10 @@ import ProfilePage from "./pages/ProfilePage";
 
 const App: React.FC = () => {
   return (
-    <div className="min-h-screen flex flex-col bg-black text-white">
+    <div className="min-h-screen flex flex-col bg-neutral-950 text-white">
+      {/* Ambient background glow */}
+      <div className="ambient-glow" />
+
       {/* Top navigation */}
       <Navigation />
 

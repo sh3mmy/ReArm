@@ -6,17 +6,20 @@ import FeaturesSection from '../components/FeaturesSection';
 import EngineeringSection from '../components/EngineeringSection';
 import TestimonialsSection from '../components/TestimonialsSection';
 import BuiltAroundYouSection from '../components/BuiltAroundYouSection';
+import Footer from '../components/Footer';
+import { HERO, ENGINEERING } from '../lib/images';
 
 const LandingPage: React.FC = () => {
   return (
     <>
-      <HeroSection />
+      <HeroSection bgSrc={HERO.home} />
       <FutureSection />
       <PossibilitiesSection />
       <FeaturesSection />
-      <EngineeringSection />
+      <EngineeringSection bgSrc={ENGINEERING.lab1} />
       <TestimonialsSection />
       <BuiltAroundYouSection />
+      <Footer />
     </>
   );
 };

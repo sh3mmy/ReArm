@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { BOOKING } from '../lib/images'; // change to '@/lib/images' if you use path aliases
+import { BOOKING } from '../lib/images';
+import { ChevronLeft, ChevronRight, MapPin, Calendar as CalendarIcon, Clock } from 'lucide-react';
 
 // ----------------------
 // Types & static data
@@ -9,18 +10,17 @@ type Clinic = {
   id: string;
   name: string;
   address: string;
-  x: number; // % position on the background map (left)
-  y: number; // % position on the background map (top)
+  x: number;
+  y: number;
   times: string[];
 };
 
 const CLINICS: Clinic[] = [
   { id: 'lon', name: 'ReArm London Clinic', address: '221B Baker St, London NW1 6XE', x: 45, y: 52, times: ['09:00', '10:30', '13:00', '15:30'] },
-  { id: 'man', name: 'ReArm Manchester Clinic', address: '1 St Peter’s Sq, Manchester M2 3AE', x: 40, y: 38, times: ['09:30', '11:00', '14:00', '16:00'] },
+  { id: 'man', name: 'ReArm Manchester Clinic', address: '1 St Peter\'s Sq, Manchester M2 3AE', x: 40, y: 38, times: ['09:30', '11:00', '14:00', '16:00'] },
   { id: 'edi', name: 'ReArm Edinburgh Clinic', address: '10 Princes St, Edinburgh EH2 2AN', x: 55, y: 25, times: ['10:00', '12:00', '14:30', '17:00'] },
 ];
 
-// Availability: clinicId -> Set of ISO dates (YYYY-MM-DD) that are AVAILABLE (green).
 const AVAILABILITY: Record<string, Set<string>> = {
   lon: new Set(['2025-08-18','2025-08-21','2025-08-25','2025-09-02','2025-09-05','2025-09-12']),
   man: new Set(['2025-08-20','2025-08-27','2025-09-03','2025-09-10']),
@@ -30,14 +30,14 @@ const AVAILABILITY: Record<string, Set<string>> = {
 const STORAGE_KEY = 'rearmSelection';
 
 // ----------------------
-// Calendar popover (no close button; auto-close on pick; outside click via capture)
+// Calendar popover
 // ----------------------
 type CalendarPopoverProps = {
   open: boolean;
   clinicId: string | null;
-  value: string;                 // ISO date (YYYY-MM-DD) or ""
+  value: string;
   onChange: (iso: string) => void;
-  onRequestClose: () => void;    // called after a valid pick or outside click
+  onRequestClose: () => void;
 };
 
 const WEEKDAYS = ['Mo','Tu','We','Th','Fr','Sa','Su'];
@@ -47,10 +47,9 @@ const toISO = (y: number, m: number, d: number) => `${y}-${pad2(m)}-${pad2(d)}`;
 const CalendarPopover: React.FC<CalendarPopoverProps> = ({ open, clinicId, value, onChange, onRequestClose }) => {
   const today = new Date();
   const [year, setYear] = useState(today.getFullYear());
-  const [month, setMonth] = useState(today.getMonth() + 1); // 1..12
+  const [month, setMonth] = useState(today.getMonth() + 1);
   const panelRef = useRef<HTMLDivElement | null>(null);
 
-  // Ultra-reliable outside click handler: capture-phase pointerdown on window
   useEffect(() => {
     if (!open) return;
     const onDown = (e: PointerEvent) => {
@@ -67,7 +66,7 @@ const CalendarPopover: React.FC<CalendarPopoverProps> = ({ open, clinicId, value
 
   const avail = clinicId ? AVAILABILITY[clinicId] : undefined;
   const firstOfMonth = new Date(year, month - 1, 1);
-  const firstDayIdx = (firstOfMonth.getDay() + 6) % 7; // Monday=0 ... Sunday=6
+  const firstDayIdx = (firstOfMonth.getDay() + 6) % 7;
   const daysInMonth = new Date(year, month, 0).getDate();
 
   const cells: Array<{ d: number | null; iso?: string; available?: boolean; past?: boolean; }> = [];
@@ -86,43 +85,46 @@ const CalendarPopover: React.FC<CalendarPopoverProps> = ({ open, clinicId, value
 
   return (
     <>
-      {/* Visual overlay (no handler; outside click handled globally) */}
-      <div aria-hidden className="fixed inset-0 bg-black/50 backdrop-blur-sm" style={{ zIndex: 1000 }} />
+      <div aria-hidden className="fixed inset-0 bg-black/60 backdrop-blur-sm" style={{ zIndex: 1000 }} />
       <div
         ref={panelRef}
-        className="fixed left-1/2 top-1/2 w-[340px] -translate-x-1/2 -translate-y-1/2 rounded-2xl border border-white/15 bg-black/85 p-4"
+        className="fixed left-1/2 top-1/2 w-[360px] -translate-x-1/2 -translate-y-1/2 rounded-3xl border border-white/[0.08] bg-neutral-950 p-6 shadow-2xl"
         role="dialog"
         aria-modal="true"
         style={{ zIndex: 1001 }}
         onPointerDown={(e) => e.stopPropagation()}
       >
-        <div className="flex items-center justify-between mb-2">
-          <button type="button" onClick={prev} className="px-2 py-1 rounded border border-white/20 text-white/80 hover:bg-white/5">‹</button>
-          <div className="text-white/90">
+        <div className="flex items-center justify-between mb-4">
+          <button type="button" onClick={prev} className="w-8 h-8 rounded-full border border-white/[0.08] flex items-center justify-center text-neutral-400 hover:text-white hover:border-white/20 transition-all duration-300">
+            <ChevronLeft size={16} />
+          </button>
+          <div className="text-white font-medium text-sm">
             {new Date(year, month - 1, 1).toLocaleString(undefined, { month: 'long', year: 'numeric' })}
           </div>
-          <button type="button" onClick={next} className="px-2 py-1 rounded border border-white/20 text-white/80 hover:bg-white/5">›</button>
+          <button type="button" onClick={next} className="w-8 h-8 rounded-full border border-white/[0.08] flex items-center justify-center text-neutral-400 hover:text-white hover:border-white/20 transition-all duration-300">
+            <ChevronRight size={16} />
+          </button>
         </div>
 
-        <div className="grid grid-cols-7 gap-1 text-center text-white/60 text-xs mb-1">
-          {WEEKDAYS.map(w => <div key={w} className="py-1">{w}</div>)}
+        <div className="grid grid-cols-7 gap-1 text-center text-neutral-500 text-xs mb-2">
+          {WEEKDAYS.map(w => <div key={w} className="py-2">{w}</div>)}
         </div>
 
         <div className="grid grid-cols-7 gap-1">
           {cells.map((c, i) => {
-            if (c.d === null) return <div key={i} className="h-9" />;
+            if (c.d === null) return <div key={i} className="h-10" />;
             const isSelected = c.iso === value;
             const color = c.available
-              ? (isSelected ? 'bg-green-500 text-black border-green-400' : 'border-green-400 text-green-300')
-              : 'border-red-400 text-red-300';
+              ? (isSelected ? 'bg-white text-neutral-950 border-white' : 'border-accent-400/40 text-accent-400 hover:bg-white/5')
+              : 'border-white/[0.06] text-neutral-600';
             const cursor = (c.available && !c.past) ? 'cursor-pointer' : 'cursor-not-allowed';
-            const opacity = c.past ? 'opacity-40' : '';
+            const opacity = c.past ? 'opacity-30' : '';
             return (
               <button
                 type="button"
                 key={c.iso}
                 onClick={() => { if (c.available && !c.past) { onChange(c.iso!); onRequestClose(); } }}
-                className={`h-9 rounded-md border ${color} ${cursor} ${opacity} hover:bg-white/10`}
+                className={`h-10 rounded-xl border ${color} ${cursor} ${opacity} transition-all duration-200 text-sm font-medium`}
                 aria-label={c.iso}
               >
                 {c.d}
@@ -131,12 +133,11 @@ const CalendarPopover: React.FC<CalendarPopoverProps> = ({ open, clinicId, value
           })}
         </div>
 
-        <div className="mt-3 flex items-center justify-between text-xs text-white/60">
+        <div className="mt-4 flex items-center justify-between text-xs text-neutral-500">
           <div className="flex items-center gap-3">
-            <span className="inline-block w-3 h-3 rounded border border-green-400" /> Available
-            <span className="inline-block w-3 h-3 rounded border border-red-400 ml-4" /> Unavailable
+            <span className="inline-block w-3 h-3 rounded border border-accent-400/40" /> Available
+            <span className="inline-block w-3 h-3 rounded border border-white/[0.06] ml-3" /> Unavailable
           </div>
-          <span className="text-white/40">Pick a green day</span>
         </div>
       </div>
     </>
@@ -150,7 +151,6 @@ export default function PrivateDemoPage() {
   const navigate = useNavigate();
   const [sp] = useSearchParams();
 
-  // Selection summary pulled from query or localStorage
   const [productNumber, setProductNumber] = useState('—');
   const [finish, setFinish] = useState('—');
 
@@ -175,13 +175,12 @@ export default function PrivateDemoPage() {
 
   const hasConfig = productNumber !== '—' && finish !== '—';
 
-  // Form state
   const [form, setForm] = useState({
     name: '',
     email: '',
     phone: '',
     address: '',
-    date: '', // ISO date
+    date: '',
     time: '',
     notes: '',
   });
@@ -189,15 +188,12 @@ export default function PrivateDemoPage() {
   const [selectedClinicId, setSelectedClinicId] = useState<string>('');
   const selectedClinic = useMemo(() => CLINICS.find(c => c.id === selectedClinicId) || null, [selectedClinicId]);
 
-  // Consents
   const [agreeTerms, setAgreeTerms] = useState(false);
   const [agreePrivacy, setAgreePrivacy] = useState(false);
   const [agreeMarketing, setAgreeMarketing] = useState(false);
 
   const [submitting, setSubmitting] = useState(false);
   const [done, setDone] = useState(false);
-
-  // Calendar visibility
   const [calendarOpen, setCalendarOpen] = useState(false);
 
   const valid = useMemo(() => {
@@ -224,38 +220,48 @@ export default function PrivateDemoPage() {
 
   const Input = (props: React.InputHTMLAttributes<HTMLInputElement> & { label: string }) => (
     <label className="block">
-      <span className="text-white/70 text-sm">{props.label}</span>
+      <span className="text-label text-neutral-500 mb-2 block">{props.label}</span>
       <input
         {...props}
-        className="mt-1 w-full rounded-xl bg-black/40 border border-white/15 px-3 py-2 text-white placeholder-white/30 outline-none focus:border-white/40"
+        className="w-full rounded-2xl bg-white/[0.02] border border-white/[0.06] px-4 py-3 text-white placeholder-neutral-600 outline-none focus:border-white/20 focus:bg-white/[0.03] transition-all duration-300 text-sm"
       />
     </label>
   );
 
   return (
-    <main className="min-h-screen bg-black text-white">
-      <div className="pointer-events-none fixed inset-0 bg-[radial-gradient(1100px_600px_at_50%_-140px,rgba(255,255,255,0.12),transparent)]" />
+    <main className="min-h-screen bg-neutral-950 text-white relative">
+      {/* Ambient glow */}
+      <div className="pointer-events-none fixed inset-0 bg-premium-sheen" />
 
-      <div className="max-w-5xl mx-auto px-4 md:px-6 py-10">
+      <div className="relative max-w-5xl mx-auto px-6 lg:px-8 py-24 lg:py-32">
         {/* Header */}
-        <div className="mb-6">
-          <h1 className="text-2xl md:text-3xl font-semibold tracking-tight">Book Your Private Demo</h1>
-          <p className="text-white/70 mt-1 text-sm">Choose a clinic, pick a time, and share your details. We’ll confirm by email.</p>
+        <div className="mb-12">
+          <div className="section-label mb-4">Experience</div>
+          <h1 className="heading-section text-display-md text-white mb-4">
+            Book Your Private Demo
+          </h1>
+          <p className="body-premium text-neutral-400 text-lg max-w-xl">
+            Choose a clinic, pick a time, and share your details. We will confirm by email.
+          </p>
         </div>
 
         {/* Map + clinic list */}
-        <div className="grid grid-cols-1 md:grid-cols-[1fr,320px] gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-[1fr,320px] gap-6 mb-8">
           <div
-            className="relative h-56 rounded-2xl border border-white/15 overflow-hidden"
+            className="relative h-64 rounded-3xl border border-white/[0.06] overflow-hidden"
             style={{ background: `url(${BOOKING.clinicBg}) center/cover no-repeat` }}
           >
-            <div className="absolute inset-0 opacity-20 pointer-events-none bg-[radial-gradient(600px_300px_at_60%_-20%,white,transparent)]" />
+            <div className="absolute inset-0 opacity-10 pointer-events-none bg-[radial-gradient(600px_300px_at_60%_-20%,white,transparent)]" />
             {CLINICS.map((c) => (
               <button
                 key={c.id}
                 type="button"
                 onClick={() => { setSelectedClinicId(c.id); setForm({ ...form, date: '', time: '' }); }}
-                className={`absolute -translate-x-1/2 -translate-y-1/2 w-5 h-5 rounded-full border ${selectedClinicId === c.id ? 'bg-white border-white' : 'bg-white/70 border-white/80'}`}
+                className={`absolute -translate-x-1/2 -translate-y-1/2 w-6 h-6 rounded-full border-2 transition-all duration-300 ${
+                  selectedClinicId === c.id
+                    ? 'bg-white border-white shadow-[0_0_20px_rgba(255,255,255,0.3)]'
+                    : 'bg-white/50 border-white/80 hover:bg-white'
+                }`}
                 style={{ left: `${c.x}%`, top: `${c.y}%` }}
                 title={c.name}
                 aria-label={c.name}
@@ -263,17 +269,25 @@ export default function PrivateDemoPage() {
             ))}
           </div>
 
-          <aside className="rounded-2xl border border-white/15 p-3 bg-white/5">
-            <ul className="space-y-2">
+          <aside className="rounded-3xl border border-white/[0.06] p-5 bg-white/[0.02] backdrop-blur-sm">
+            <div className="text-label text-neutral-500 mb-4 flex items-center gap-2">
+              <MapPin size={14} />
+              Select a Clinic
+            </div>
+            <ul className="space-y-3">
               {CLINICS.map((c) => (
                 <li key={c.id}>
                   <button
                     type="button"
                     onClick={() => { setSelectedClinicId(c.id); setForm({ ...form, date: '', time: '' }); }}
-                    className={`w-full text-left rounded-xl px-3 py-2 border transition ${selectedClinicId === c.id ? 'border-white bg-white/10' : 'border-white/20 hover:border-white/40 hover:bg-white/5'}`}
+                    className={`w-full text-left rounded-2xl px-4 py-3 border transition-all duration-300 ${
+                      selectedClinicId === c.id
+                        ? 'border-white bg-white/[0.06]'
+                        : 'border-white/[0.06] hover:border-white/15 hover:bg-white/[0.02]'
+                    }`}
                   >
-                    <div className="font-medium">{c.name}</div>
-                    <div className="text-white/70 text-xs">{c.address}</div>
+                    <div className="font-medium text-sm text-white">{c.name}</div>
+                    <div className="text-neutral-500 text-xs mt-1">{c.address}</div>
                   </button>
                 </li>
               ))}
@@ -282,36 +296,35 @@ export default function PrivateDemoPage() {
         </div>
 
         {/* Summary + Form */}
-        <div className="grid grid-cols-1 lg:grid-cols-[360px,1fr] gap-6 mt-6">
+        <div className="grid grid-cols-1 lg:grid-cols-[360px,1fr] gap-6">
           {/* Summary */}
-          <aside className="relative rounded-3xl border border-white/10 bg-black/60 backdrop-blur p-5 h-fit">
-            <div className={`text-white/70 text-sm ${!hasConfig ? 'opacity-60' : ''}`}>Selected Configuration</div>
-            <div className={`mt-2 rounded-2xl border border-white/10 p-4 bg-white/5 ${!hasConfig ? 'opacity-50' : ''}`}>
-              <div className="text-white/70 text-xs">Internal Product Number</div>
-              <div className="text-xl font-semibold mt-1">{productNumber}</div>
-              <div className="mt-3 text-white/80 text-sm">
+          <aside className="relative rounded-3xl border border-white/[0.06] bg-white/[0.02] backdrop-blur-sm p-6 h-fit">
+            <div className={`text-label text-neutral-500 mb-4 ${!hasConfig ? 'opacity-60' : ''}`}>Selected Configuration</div>
+            <div className={`rounded-2xl border border-white/[0.06] p-5 bg-white/[0.02] ${!hasConfig ? 'opacity-50' : ''}`}>
+              <div className="text-neutral-500 text-xs mb-1">Internal Product Number</div>
+              <div className="text-2xl font-light text-white tracking-tight">{productNumber}</div>
+              <div className="mt-4 text-neutral-400 text-sm">
                 Finish: <span className="text-white">{finish}</span>
               </div>
-              <div className="mt-3">
+              <div className="mt-4">
                 <button
                   onClick={() => navigate('/your-arm')}
-                  className={`text-sm underline underline-offset-4 ${!hasConfig ? 'pointer-events-none text-white/40' : 'text-white/80 hover:text-white'}`}
+                  className={`text-sm link-underline ${!hasConfig ? 'pointer-events-none text-neutral-700' : 'text-neutral-400 hover:text-white'}`}
                 >
-                  Edit
+                  Edit Configuration
                 </button>
               </div>
             </div>
-            <div className={`mt-4 text-white/60 text-xs ${!hasConfig ? 'opacity-60' : ''}`}>
+            <div className={`mt-4 text-neutral-600 text-xs ${!hasConfig ? 'opacity-60' : ''}`}>
               This code helps our clinicians prepare compatible parts and materials before your visit.
             </div>
 
-            {/* Overlay when no config */}
             {!hasConfig && (
-              <div className="absolute inset-0 rounded-3xl bg-black/60 backdrop-blur-sm flex items-center justify-center">
+              <div className="absolute inset-0 rounded-3xl bg-neutral-950/70 backdrop-blur-sm flex items-center justify-center">
                 <button
                   type="button"
                   onClick={() => navigate('/your-arm')}
-                  className="px-4 py-2 rounded-xl bg-white text-black font-semibold hover:opacity-90 transition"
+                  className="btn-premium text-sm py-3 px-6"
                 >
                   Select an Arm
                 </button>
@@ -320,26 +333,30 @@ export default function PrivateDemoPage() {
           </aside>
 
           {/* Booking Form */}
-          <section className="rounded-3xl border border-white/10 bg-black/60 backdrop-blur p-5">
+          <section className="rounded-3xl border border-white/[0.06] bg-white/[0.02] backdrop-blur-sm p-6 lg:p-8">
             {!done ? (
-              <form onSubmit={onSubmit} className="grid gap-5">
+              <form onSubmit={onSubmit} className="grid gap-6">
                 {/* Date & Time */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                  {/* Date trigger (read-only) */}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  {/* Date trigger */}
                   <label className="block md:col-span-1">
-                    <span className="text-white/70 text-sm">Preferred date</span>
-                    <div className={`mt-1 w-full rounded-xl border px-3 py-2 ${selectedClinic ? 'bg-black/40 border-white/15 text-white' : 'bg-black/20 border-white/10 text-white/40 cursor-not-allowed'}`}>
+                    <span className="text-label text-neutral-500 mb-2 block flex items-center gap-2">
+                      <CalendarIcon size={14} />
+                      Preferred date
+                    </span>
+                    <div className={`mt-1 w-full rounded-2xl border px-4 py-3 transition-all duration-300 ${
+                      selectedClinic ? 'bg-white/[0.02] border-white/[0.06] text-white' : 'bg-white/[0.01] border-white/[0.04] text-neutral-700 cursor-not-allowed'
+                    }`}>
                       <button
                         type="button"
                         disabled={!selectedClinic}
                         onClick={() => selectedClinic && setCalendarOpen(true)}
-                        className="w-full text-left outline-none"
+                        className="w-full text-left outline-none text-sm"
                       >
                         {form.date ? new Date(form.date).toLocaleDateString(undefined, { day: '2-digit', month: '2-digit', year: 'numeric' }) : 'Select date'}
                       </button>
                     </div>
 
-                    {/* Calendar popover */}
                     <CalendarPopover
                       open={calendarOpen}
                       clinicId={selectedClinic?.id || null}
@@ -351,12 +368,17 @@ export default function PrivateDemoPage() {
 
                   {/* Time */}
                   <label className="block md:col-span-2">
-                    <span className="text-white/70 text-sm">Available times</span>
+                    <span className="text-label text-neutral-500 mb-2 block flex items-center gap-2">
+                      <Clock size={14} />
+                      Available times
+                    </span>
                     <select
                       disabled={!selectedClinic || !form.date}
                       value={form.time}
                       onChange={(e) => setForm({ ...form, time: e.target.value })}
-                      className={`mt-1 w-full rounded-xl border px-3 py-2 outline-none ${selectedClinic && form.date ? 'bg-black/40 border-white/15 text-white focus:border-white/40' : 'bg-black/20 border-white/10 text-white/40'}`}
+                      className={`w-full rounded-2xl border px-4 py-3 outline-none text-sm transition-all duration-300 ${
+                        selectedClinic && form.date ? 'bg-white/[0.02] border-white/[0.06] text-white focus:border-white/20' : 'bg-white/[0.01] border-white/[0.04] text-neutral-700'
+                      }`}
                       required
                     >
                       <option value="" disabled>{selectedClinic ? (form.date ? 'Select a slot' : 'Select a date first') : 'Select a clinic first'}</option>
@@ -377,58 +399,63 @@ export default function PrivateDemoPage() {
 
                 {/* Notes */}
                 <label className="block">
-                  <span className="text-white/70 text-sm">Notes</span>
+                  <span className="text-label text-neutral-500 mb-2 block">Notes</span>
                   <textarea
-                    rows={5}
+                    rows={4}
                     placeholder="Anything we should prepare or be aware of?"
                     value={form.notes}
                     onChange={(e) => setForm({ ...form, notes: e.target.value })}
-                    className="mt-1 w-full rounded-xl bg-black/40 border border-white/15 px-3 py-2 text-white placeholder-white/30 outline-none focus:border-white/40"
+                    className="w-full rounded-2xl bg-white/[0.02] border border-white/[0.06] px-4 py-3 text-white placeholder-neutral-600 outline-none focus:border-white/20 focus:bg-white/[0.03] transition-all duration-300 text-sm"
                   />
                 </label>
 
                 {/* Consents */}
-                <div className="rounded-2xl border border-white/15 p-4 bg-white/5 space-y-2">
-                  <label className="flex items-start gap-2">
-                    <input type="checkbox" className="mt-1" checked={agreeTerms} onChange={(e) => setAgreeTerms(e.target.checked)} required />
-                    <span className="text-sm text-white/80">I agree to the <a href="#" className="underline hover:opacity-80">Terms & Conditions</a>.</span>
+                <div className="rounded-2xl border border-white/[0.06] p-5 bg-white/[0.02] space-y-3">
+                  <label className="flex items-start gap-3 cursor-pointer group">
+                    <input type="checkbox" className="mt-1 accent-white" checked={agreeTerms} onChange={(e) => setAgreeTerms(e.target.checked)} required />
+                    <span className="text-sm text-neutral-400 group-hover:text-neutral-300 transition-colors duration-200">I agree to the <a href="#" className="text-white hover:underline">Terms & Conditions</a>.</span>
                   </label>
-                  <label className="flex items-start gap-2">
-                    <input type="checkbox" className="mt-1" checked={agreePrivacy} onChange={(e) => setAgreePrivacy(e.target.checked)} required />
-                    <span className="text-sm text-white/80">I agree to how ReArm will use my information as described in the <a href="#" className="underline hover:opacity-80">Privacy Notice</a>.</span>
+                  <label className="flex items-start gap-3 cursor-pointer group">
+                    <input type="checkbox" className="mt-1 accent-white" checked={agreePrivacy} onChange={(e) => setAgreePrivacy(e.target.checked)} required />
+                    <span className="text-sm text-neutral-400 group-hover:text-neutral-300 transition-colors duration-200">I agree to how ReArm will use my information as described in the <a href="#" className="text-white hover:underline">Privacy Notice</a>.</span>
                   </label>
-                  <label className="flex items-start gap-2">
-                    <input type="checkbox" className="mt-1" checked={agreeMarketing} onChange={(e) => setAgreeMarketing(e.target.checked)} />
-                    <span className="text-sm text-white/80">I agree to receive occasional product updates and marketing emails (optional).</span>
+                  <label className="flex items-start gap-3 cursor-pointer group">
+                    <input type="checkbox" className="mt-1 accent-white" checked={agreeMarketing} onChange={(e) => setAgreeMarketing(e.target.checked)} />
+                    <span className="text-sm text-neutral-400 group-hover:text-neutral-300 transition-colors duration-200">I agree to receive occasional product updates and marketing emails (optional).</span>
                   </label>
                 </div>
 
                 {/* Submit */}
-                <div className="flex items-center justify-end">
+                <div className="flex items-center justify-end pt-2">
                   <button
                     type="submit"
                     disabled={!valid || submitting}
-                    className={`px-5 py-2 rounded-xl transition ${valid && !submitting ? 'bg-white text-black hover:opacity-90' : 'bg-white/10 text-white/40'}`}
+                    className={`px-8 py-3 rounded-full text-sm font-medium transition-all duration-300 ${
+                      valid && !submitting
+                        ? 'bg-white text-neutral-950 hover:bg-neutral-100'
+                        : 'bg-white/[0.05] text-neutral-600 border border-white/[0.06]'
+                    }`}
                   >
-                    {submitting ? 'Booking…' : 'Book Your Session'}
+                    {submitting ? 'Booking...' : 'Book Your Session'}
                   </button>
                 </div>
               </form>
             ) : (
-              <div className="text-center py-16">
-                <div className="text-2xl font-semibold">Request received</div>
-                <div className="text-white/70 mt-2">
-                  We’ve logged your interest in <span className="text-white">{productNumber}</span> ({finish}).
+              <div className="text-center py-20">
+                <div className="w-16 h-16 rounded-full bg-white/[0.05] border border-white/[0.08] flex items-center justify-center mx-auto mb-6">
+                  <div className="w-2 h-2 rounded-full bg-accent-400" />
                 </div>
-                <div className="text-white/70 mt-1 text-sm">
+                <div className="text-2xl font-light text-white tracking-tight mb-4">Request received</div>
+                <div className="text-neutral-400 mb-2">
+                  We have logged your interest in <span className="text-white">{productNumber}</span> ({finish}).
+                </div>
+                <div className="text-neutral-500 text-sm mb-1">
                   Clinic: <span className="text-white">{selectedClinic?.name || '—'}</span> — Slot: <span className="text-white">{form.time || '—'}</span>
                 </div>
-                <div className="text-white/60 mt-1 text-sm">A coordinator will email you shortly to confirm the slot.</div>
-                <div className="mt-6">
-                  <button onClick={() => navigate('/your-arm')} className="px-5 py-2 rounded-xl border border-white/20 text-white hover:border-white/60 hover:bg-white/5">
-                    Back to Configurator
-                  </button>
-                </div>
+                <div className="text-neutral-600 text-sm mb-8">A coordinator will email you shortly to confirm the slot.</div>
+                <button onClick={() => navigate('/your-arm')} className="btn-outline text-sm py-3 px-6">
+                  Back to Configurator
+                </button>
               </div>
             )}
           </section>

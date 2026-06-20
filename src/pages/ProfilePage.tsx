@@ -1,4 +1,3 @@
-// src/pages/ProfilePage.tsx
 import React, { useEffect, useMemo, useState } from "react";
 import { useAuth } from "../context/AuthContext";
 import {
@@ -14,14 +13,11 @@ import {
   unpairDevice,
 } from "../lib/devices";
 
-// Reuse the configurator summary if present
-const LS_SELECTION = "rearmSelection"; // { productNumber, finish }
-
 const BatteryBar: React.FC<{ pct: number }> = ({ pct }) => (
-  <div className="w-full h-3 rounded bg-white/10 overflow-hidden">
+  <div className="w-full h-2 rounded-full bg-white/[0.06] overflow-hidden">
     <div
-      className={`h-full ${
-        pct > 40 ? "bg-green-400" : pct > 15 ? "bg-yellow-400" : "bg-red-400"
+      className={`h-full rounded-full transition-all duration-500 ${
+        pct > 40 ? "bg-emerald-400" : pct > 15 ? "bg-amber-400" : "bg-red-400"
       }`}
       style={{ width: `${Math.max(0, Math.min(100, pct))}%` }}
     />
@@ -29,10 +25,10 @@ const BatteryBar: React.FC<{ pct: number }> = ({ pct }) => (
 );
 
 const HealthBar: React.FC<{ pct: number }> = ({ pct }) => (
-  <div className="w-full h-3 rounded bg-white/10 overflow-hidden">
+  <div className="w-full h-2 rounded-full bg-white/[0.06] overflow-hidden">
     <div
-      className={`h-full ${
-        pct > 80 ? "bg-green-400" : pct > 60 ? "bg-yellow-400" : "bg-red-400"
+      className={`h-full rounded-full transition-all duration-500 ${
+        pct > 80 ? "bg-emerald-400" : pct > 60 ? "bg-amber-400" : "bg-red-400"
       }`}
       style={{ width: `${Math.max(0, Math.min(100, pct))}%` }}
     />
@@ -48,6 +44,8 @@ function fmt(iso?: string) {
   }
 }
 
+const LS_SELECTION = "rearmSelection";
+
 const ProfilePage: React.FC = () => {
   const { user, signOut } = useAuth();
 
@@ -58,7 +56,6 @@ const ProfilePage: React.FC = () => {
   const [busy, setBusy] = useState<string | null>(null);
   const [noteDraft, setNoteDraft] = useState("");
 
-  // Load configurator summary
   const selection = useMemo(() => {
     try {
       const raw = localStorage.getItem(LS_SELECTION);
@@ -68,14 +65,12 @@ const ProfilePage: React.FC = () => {
     }
   }, []);
 
-  // Load devices and reports for user
   useEffect(() => {
     if (!user?.uid) return;
     setDevices(getDevices(user.uid));
     setReports(getDiagReports(user.uid));
   }, [user?.uid]);
 
-  // Keep note field in sync with selected device
   useEffect(() => {
     if (!user?.uid) return;
     const selected = devices.find((d) => d.id === (selectedId || devices[0]?.id));
@@ -84,7 +79,6 @@ const ProfilePage: React.FC = () => {
 
   const selected = devices.find((d) => d.id === (selectedId || devices[0]?.id)) || null;
 
-  // Pair a new device
   const onPair = (e: React.FormEvent) => {
     e.preventDefault();
     if (!user?.uid || !pairCode.trim()) return;
@@ -98,7 +92,6 @@ const ProfilePage: React.FC = () => {
     }, 350);
   };
 
-  // Save note to storage
   const saveNote = () => {
     if (!user?.uid || !selected) return;
     const updated = devices.map((d) => (d.id === selected.id ? { ...d, notes: noteDraft } : d));
@@ -106,7 +99,6 @@ const ProfilePage: React.FC = () => {
     setDevices(updated);
   };
 
-  // Device actions
   const doSync = () => {
     if (!user?.uid || !selected) return;
     setBusy("sync");
@@ -116,6 +108,7 @@ const ProfilePage: React.FC = () => {
       setBusy(null);
     }, 500);
   };
+
   const doDiag = () => {
     if (!user?.uid || !selected) return;
     setBusy("diag");
@@ -125,6 +118,7 @@ const ProfilePage: React.FC = () => {
       setBusy(null);
     }, 900);
   };
+
   const doOTA = () => {
     if (!user?.uid || !selected) return;
     setBusy("ota");
@@ -134,6 +128,7 @@ const ProfilePage: React.FC = () => {
       setBusy(null);
     }, 800);
   };
+
   const doUnpair = () => {
     if (!user?.uid || !selected) return;
     setBusy("unpair");
@@ -145,6 +140,7 @@ const ProfilePage: React.FC = () => {
       setBusy(null);
     }, 300);
   };
+
   const doTendonChange = () => {
     if (!user?.uid || !selected) return;
     setBusy("tendon");
@@ -157,31 +153,39 @@ const ProfilePage: React.FC = () => {
 
   if (!user) {
     return (
-      <main className="min-h-screen bg-black text-white">
-        <div className="max-w-5xl mx-auto px-4 md:px-6 py-12">
-          <h1 className="text-3xl font-semibold tracking-tight">Device Hub</h1>
-          <p className="text-white/70 mt-2">
-            You’re not signed in. Use the Account button to sign in or “Skip login (dev)”.
-          </p>
+      <main className="min-h-screen bg-neutral-950 text-white relative">
+        <div className="pointer-events-none fixed inset-0 bg-premium-sheen" />
+        <div className="relative max-w-5xl mx-auto px-4 md:px-6 py-24">
+          <div className="text-center py-20">
+            <div className="w-16 h-16 rounded-full bg-white/[0.05] border border-white/[0.08] flex items-center justify-center mx-auto mb-6">
+              <div className="w-2 h-2 rounded-full bg-accent-400" />
+            </div>
+            <h1 className="text-3xl font-light text-white tracking-tight mb-4">Device Hub</h1>
+            <p className="text-neutral-400 max-w-md mx-auto">
+              You are not signed in. Use the Account button to sign in or "Skip login (dev)".
+            </p>
+          </div>
         </div>
       </main>
     );
   }
 
   return (
-    <main className="min-h-screen bg-black text-white">
-      <div className="pointer-events-none fixed inset-0 bg-[radial-gradient(1100px_600px_at_50%_-140px,rgba(255,255,255,0.12),transparent)]" />
-      <div className="max-w-6xl mx-auto px-4 md:px-6 py-10 relative">
-        <header className="mb-6 flex items-center justify-between">
+    <main className="min-h-screen bg-neutral-950 text-white relative">
+      <div className="pointer-events-none fixed inset-0 bg-premium-sheen" />
+
+      <div className="relative max-w-6xl mx-auto px-4 md:px-6 py-24">
+        <header className="mb-8 flex items-center justify-between">
           <div>
-            <h1 className="text-2xl md:text-3xl font-semibold tracking-tight">Device Hub</h1>
-            <p className="text-white/70 text-sm">
+            <div className="section-label mb-2">Management</div>
+            <h1 className="text-2xl md:text-3xl font-light text-white tracking-tight">Device Hub</h1>
+            <p className="text-neutral-500 text-sm mt-1">
               Pair your prosthetic, get OTA updates, run diagnostics, and track maintenance.
             </p>
           </div>
           <button
             onClick={() => signOut()}
-            className="px-3 py-2 rounded-xl border border-white/20 text-white/80 hover:bg-white/5"
+            className="px-4 py-2 rounded-full border border-white/[0.08] text-neutral-400 hover:text-white hover:border-white/20 transition-all duration-300 text-sm"
           >
             Sign out
           </button>
@@ -189,23 +193,23 @@ const ProfilePage: React.FC = () => {
 
         <div className="grid grid-cols-1 lg:grid-cols-[320px,1fr] gap-6">
           {/* LEFT: List + Pair */}
-          <aside className="rounded-3xl border border-white/10 bg-black/60 backdrop-blur p-5 h-fit">
-            <div className="text-lg font-medium">My Devices</div>
-            <ul className="mt-3 space-y-2">
+          <aside className="rounded-3xl border border-white/[0.06] bg-white/[0.02] backdrop-blur-sm p-6 h-fit">
+            <div className="text-lg font-medium text-white tracking-tight">My Devices</div>
+            <ul className="mt-4 space-y-2">
               {devices.map((d, i) => {
                 const isActive = (selectedId ?? devices[0]?.id) === d.id || (!selectedId && i === 0);
                 return (
                   <li key={d.id}>
                     <button
                       onClick={() => setSelectedId(d.id)}
-                      className={`w-full text-left rounded-xl px-3 py-2 border transition ${
+                      className={`w-full text-left rounded-2xl px-4 py-3 border transition-all duration-300 ${
                         isActive
-                          ? "border-white bg-white/10"
-                          : "border-white/20 hover:border-white/40 hover:bg-white/5"
+                          ? "border-white bg-white/[0.06]"
+                          : "border-white/[0.06] hover:border-white/15 hover:bg-white/[0.02]"
                       }`}
                     >
-                      <div className="font-medium">{d.model}</div>
-                      <div className="text-white/60 text-xs">
+                      <div className="font-medium text-sm text-white">{d.model}</div>
+                      <div className="text-neutral-500 text-xs mt-1">
                         FW {d.firmware} {d.updateAvailable ? `• Update → ${d.updateAvailable}` : ""}
                       </div>
                     </button>
@@ -213,54 +217,56 @@ const ProfilePage: React.FC = () => {
                 );
               })}
               {devices.length === 0 && (
-                <li className="text-white/60 text-sm">No devices yet.</li>
+                <li className="text-neutral-500 text-sm py-4">No devices yet.</li>
               )}
             </ul>
 
-            <div className="mt-5 border-t border-white/10 pt-4">
-              <div className="text-white/80 text-sm mb-2">Pair a device</div>
+            <div className="mt-6 border-t border-white/[0.06] pt-5">
+              <div className="text-neutral-400 text-sm mb-3">Pair a device</div>
               <form onSubmit={onPair} className="flex gap-2">
                 <input
                   value={pairCode}
                   onChange={(e) => setPairCode(e.target.value)}
-                  placeholder="Enter pairing code (e.g. HL230A1)"
-                  className="flex-1 rounded-xl bg-black/40 border border-white/15 px-3 py-2 text-white outline-none focus:border-white/40"
+                  placeholder="Enter pairing code"
+                  className="flex-1 rounded-2xl bg-white/[0.02] border border-white/[0.06] px-4 py-2.5 text-white text-sm placeholder-neutral-600 outline-none focus:border-white/20 transition-all duration-300"
                 />
                 <button
                   type="submit"
                   disabled={!pairCode.trim() || !!busy}
-                  className={`px-3 py-2 rounded-xl transition ${
+                  className={`px-4 py-2.5 rounded-full text-sm font-medium transition-all duration-300 ${
                     !pairCode.trim() || !!busy
-                      ? "bg-white/10 text-white/40"
-                      : "bg-white text-black hover:opacity-90"
+                      ? "bg-white/[0.05] text-neutral-600 border border-white/[0.06]"
+                      : "bg-white text-neutral-950 hover:bg-neutral-100"
                   }`}
                 >
                   {busy === "pair" ? "Pairing…" : "Pair"}
                 </button>
               </form>
-              <div className="text-white/40 text-xs mt-2">
+              <div className="text-neutral-600 text-xs mt-2">
                 Use the code shown in the ReArm app or on your clinic sheet.
               </div>
             </div>
           </aside>
 
           {/* RIGHT: Detail */}
-          <section className="rounded-3xl border border-white/10 bg-black/60 backdrop-blur p-5">
+          <section className="rounded-3xl border border-white/[0.06] bg-white/[0.02] backdrop-blur-sm p-6">
             {!selected ? (
-              <div className="text-white/60">Select or pair a device to view details.</div>
+              <div className="text-neutral-500 py-12 text-center">Select or pair a device to view details.</div>
             ) : (
               <>
-                <div className="flex flex-wrap items-center justify-between gap-3">
+                <div className="flex flex-wrap items-center justify-between gap-3 mb-6">
                   <div>
-                    <div className="text-xl font-semibold">{selected.model}</div>
-                    <div className="text-white/60 text-sm">Last sync: {fmt(selected.lastSyncISO)}</div>
+                    <div className="text-xl font-medium text-white tracking-tight">{selected.model}</div>
+                    <div className="text-neutral-500 text-sm">Last sync: {fmt(selected.lastSyncISO)}</div>
                   </div>
                   <div className="flex flex-wrap gap-2">
                     <button
                       onClick={doSync}
                       disabled={busy === "sync"}
-                      className={`px-3 py-2 rounded-xl border border-white/20 text-white/80 hover:bg-white/5 ${
-                        busy === "sync" ? "opacity-50" : ""
+                      className={`px-4 py-2 rounded-full border text-sm transition-all duration-300 ${
+                        busy === "sync"
+                          ? "border-white/[0.06] text-neutral-600"
+                          : "border-white/[0.08] text-neutral-400 hover:text-white hover:border-white/20"
                       }`}
                     >
                       {busy === "sync" ? "Syncing…" : "Sync now"}
@@ -268,8 +274,10 @@ const ProfilePage: React.FC = () => {
                     <button
                       onClick={doDiag}
                       disabled={busy === "diag"}
-                      className={`px-3 py-2 rounded-xl border border-white/20 text-white/80 hover:bg-white/5 ${
-                        busy === "diag" ? "opacity-50" : ""
+                      className={`px-4 py-2 rounded-full border text-sm transition-all duration-300 ${
+                        busy === "diag"
+                          ? "border-white/[0.06] text-neutral-600"
+                          : "border-white/[0.08] text-neutral-400 hover:text-white hover:border-white/20"
                       }`}
                     >
                       {busy === "diag" ? "Running…" : "Run diagnostics"}
@@ -278,8 +286,10 @@ const ProfilePage: React.FC = () => {
                       <button
                         onClick={doOTA}
                         disabled={busy === "ota"}
-                        className={`px-3 py-2 rounded-xl bg-white text-black hover:opacity-90 ${
-                          busy === "ota" ? "opacity-70" : ""
+                        className={`px-4 py-2 rounded-full text-sm transition-all duration-300 ${
+                          busy === "ota"
+                            ? "bg-white/[0.05] text-neutral-600"
+                            : "bg-white text-neutral-950 hover:bg-neutral-100"
                         }`}
                       >
                         {busy === "ota" ? "Updating…" : `Update to ${selected.updateAvailable}`}
@@ -287,7 +297,7 @@ const ProfilePage: React.FC = () => {
                     ) : (
                       <button
                         disabled
-                        className="px-3 py-2 rounded-xl border border-white/20 text-white/40"
+                        className="px-4 py-2 rounded-full border border-white/[0.06] text-neutral-600 text-sm"
                         title="Your firmware is up to date"
                       >
                         FW {selected.firmware} ✓
@@ -296,8 +306,10 @@ const ProfilePage: React.FC = () => {
                     <button
                       onClick={doUnpair}
                       disabled={busy === "unpair"}
-                      className={`px-3 py-2 rounded-xl border border-red-400 text-red-200 hover:bg-red-500/10 ${
-                        busy === "unpair" ? "opacity-50" : ""
+                      className={`px-4 py-2 rounded-full border text-sm transition-all duration-300 ${
+                        busy === "unpair"
+                          ? "border-red-500/20 text-red-400/50"
+                          : "border-red-500/30 text-red-300 hover:bg-red-500/10"
                       }`}
                     >
                       {busy === "unpair" ? "Removing…" : "Unpair"}
@@ -305,19 +317,17 @@ const ProfilePage: React.FC = () => {
                   </div>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mt-5">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {/* Battery */}
-                  <div className="rounded-2xl border border-white/10 p-4 bg-white/5">
-                    <div className="text-white/70 text-sm">Battery</div>
-                    <div className="mt-2 flex items-end gap-3">
-                      <div className="text-2xl font-semibold">
+                  <div className="rounded-2xl border border-white/[0.06] p-5 bg-white/[0.02]">
+                    <div className="text-neutral-500 text-sm mb-3">Battery</div>
+                    <div className="flex items-end gap-3 mb-3">
+                      <div className="text-2xl font-light text-white tracking-tight">
                         {Math.round(selected.batteryPct)}%
                       </div>
                     </div>
-                    <div className="mt-2">
-                      <BatteryBar pct={selected.batteryPct} />
-                    </div>
-                    <div className="text-white/60 text-xs mt-2">
+                    <BatteryBar pct={selected.batteryPct} />
+                    <div className="text-neutral-600 text-xs mt-2">
                       {selected.batteryPct > 50
                         ? "Estimated: all-day use"
                         : selected.batteryPct > 20
@@ -327,24 +337,23 @@ const ProfilePage: React.FC = () => {
                   </div>
 
                   {/* Actuator health */}
-                  <div className="rounded-2xl border border-white/10 p-4 bg-white/5">
-                    <div className="text-white/70 text-sm">Actuator Tendons</div>
-                    <div className="mt-2 text-2xl font-semibold">
+                  <div className="rounded-2xl border border-white/[0.06] p-5 bg-white/[0.02]">
+                    <div className="text-neutral-500 text-sm mb-3">Actuator Tendons</div>
+                    <div className="text-2xl font-light text-white tracking-tight mb-3">
                       {Math.round(selected.actuatorHealthPct)}%
                     </div>
-                    <div className="mt-2">
-                      <HealthBar pct={selected.actuatorHealthPct} />
+                    <HealthBar pct={selected.actuatorHealthPct} />
+                    <div className="text-neutral-600 text-xs mt-2">
+                      Next recommended change: {new Date(selected.nextTendonChangeISO).toLocaleDateString()}
                     </div>
-                    <div className="text-white/60 text-xs mt-2">
-                      Next recommended change:{" "}
-                      {new Date(selected.nextTendonChangeISO).toLocaleDateString()}
-                    </div>
-                    <div className="mt-3">
+                    <div className="mt-4">
                       <button
                         onClick={doTendonChange}
                         disabled={busy === "tendon"}
-                        className={`px-3 py-2 rounded-xl border border-white/20 text-white/80 hover:bg-white/5 ${
-                          busy === "tendon" ? "opacity-50" : ""
+                        className={`px-4 py-2 rounded-full border text-sm transition-all duration-300 ${
+                          busy === "tendon"
+                            ? "border-white/[0.06] text-neutral-600"
+                            : "border-white/[0.08] text-neutral-400 hover:text-white hover:border-white/20"
                         }`}
                       >
                         Mark tendon changed
@@ -353,92 +362,79 @@ const ProfilePage: React.FC = () => {
                   </div>
 
                   {/* Usage */}
-                  <div className="rounded-2xl border border-white/10 p-4 bg-white/5">
-                    <div className="text-white/70 text-sm">Usage</div>
-                    <div className="mt-2 grid grid-cols-2 gap-3">
+                  <div className="rounded-2xl border border-white/[0.06] p-5 bg-white/[0.02]">
+                    <div className="text-neutral-500 text-sm mb-3">Usage</div>
+                    <div className="grid grid-cols-2 gap-4">
                       <div>
-                        <div className="text-xs text-white/60">Hours used</div>
-                        <div className="text-xl font-semibold">
-                          {selected.hoursUsed.toFixed(1)}h
-                        </div>
+                        <div className="text-xs text-neutral-600">Hours used</div>
+                        <div className="text-xl font-light text-white tracking-tight">{selected.hoursUsed.toFixed(1)}h</div>
                       </div>
                       <div>
-                        <div className="text-xs text-white/60">Grips today</div>
-                        <div className="text-xl font-semibold">
-                          {selected.gripsToday}
-                        </div>
+                        <div className="text-xs text-neutral-600">Grips today</div>
+                        <div className="text-xl font-light text-white tracking-tight">{selected.gripsToday}</div>
                       </div>
                     </div>
                   </div>
 
                   {/* Notes */}
-                  <div className="rounded-2xl border border-white/10 p-4 bg-white/5">
-                    <div className="text-white/70 text-sm">Device notes</div>
+                  <div className="rounded-2xl border border-white/[0.06] p-5 bg-white/[0.02]">
+                    <div className="text-neutral-500 text-sm mb-3">Device notes</div>
                     <textarea
                       value={noteDraft}
                       onChange={(e) => setNoteDraft(e.target.value)}
                       onBlur={saveNote}
                       rows={4}
-                      className="mt-2 w-full rounded-xl bg-black/40 border border-white/15 px-3 py-2 text-white outline-none focus:border-white/40"
+                      className="w-full rounded-2xl bg-white/[0.02] border border-white/[0.06] px-4 py-3 text-white text-sm placeholder-neutral-600 outline-none focus:border-white/20 transition-all duration-300"
                       placeholder="Add any fit/comfort/usage notes for your clinician…"
                     />
-                    <div className="text-white/40 text-xs mt-1">Saved on blur.</div>
+                    <div className="text-neutral-600 text-xs mt-2">Saved on blur.</div>
                   </div>
                 </div>
 
                 {/* Configurator selection */}
-                <div className="mt-6 rounded-2xl border border-white/10 p-4 bg-white/5">
-                  <div className="text-white/70 text-sm">Current configuration</div>
+                <div className="mt-6 rounded-2xl border border-white/[0.06] p-5 bg-white/[0.02]">
+                  <div className="text-neutral-500 text-sm mb-3">Current configuration</div>
                   {selection ? (
-                    <div className="mt-2">
-                      <div className="text-white/60 text-xs">Internal Product Number</div>
-                      <div className="text-lg font-semibold">{selection.productNumber || "—"}</div>
-                      <div className="text-white/80 text-sm mt-1">
+                    <div>
+                      <div className="text-neutral-600 text-xs mb-1">Internal Product Number</div>
+                      <div className="text-lg font-light text-white tracking-tight">{selection.productNumber || "—"}</div>
+                      <div className="text-neutral-400 text-sm mt-2">
                         Finish: <span className="text-white">{selection.finish || "—"}</span>
                       </div>
-                      <div className="mt-2">
-                        <a
-                          href="/your-arm"
-                          className="text-sm underline underline-offset-4 text-white/80 hover:text-white"
-                        >
+                      <div className="mt-3">
+                        <a href="/your-arm" className="text-sm link-underline text-neutral-400 hover:text-white inline-block">
                           Edit in configurator
                         </a>
                       </div>
                     </div>
                   ) : (
-                    <div className="mt-2 text-white/60 text-sm">
+                    <div className="text-neutral-500 text-sm">
                       No saved configuration.{" "}
-                      <a href="/your-arm" className="underline hover:text-white">
-                        Choose your arm
-                      </a>.
+                      <a href="/your-arm" className="text-white hover:underline">Choose your arm</a>.
                     </div>
                   )}
                 </div>
 
                 {/* Diagnostics history */}
-                <div className="mt-6 rounded-2xl border border-white/10 p-4 bg-white/5">
-                  <div className="text-white/70 text-sm">Diagnostics history</div>
+                <div className="mt-6 rounded-2xl border border-white/[0.06] p-5 bg-white/[0.02]">
+                  <div className="text-neutral-500 text-sm mb-3">Diagnostics history</div>
                   {reports.length === 0 ? (
-                    <div className="text-white/60 text-sm mt-2">No diagnostics run yet.</div>
+                    <div className="text-neutral-500 text-sm py-4">No diagnostics run yet.</div>
                   ) : (
-                    <ul className="mt-3 space-y-3">
+                    <ul className="space-y-3">
                       {reports.map((r) => (
-                        <li key={r.id} className="rounded-xl border border-white/10 p-3 bg-black/40">
+                        <li key={r.id} className="rounded-2xl border border-white/[0.06] p-4 bg-white/[0.02]">
                           <div className="flex items-center justify-between">
-                            <div className="font-medium">{fmt(r.finishedAtISO)}</div>
-                            <div className="text-white/60 text-sm">{r.summary}</div>
+                            <div className="font-medium text-sm text-white">{fmt(r.finishedAtISO)}</div>
+                            <div className="text-neutral-500 text-sm">{r.summary}</div>
                           </div>
-                          <ul className="mt-2 grid grid-cols-1 md:grid-cols-2 gap-2">
+                          <ul className="mt-3 grid grid-cols-1 md:grid-cols-2 gap-2">
                             {r.items.map((i, idx) => (
-                              <li key={idx} className="text-sm">
-                                <span
-                                  className={`mr-2 ${i.ok ? "text-green-400" : "text-red-400"}`}
-                                >
-                                  {i.ok ? "✓" : "•"}
-                                </span>
-                                <span className="text-white/80">{i.name}</span>
+                              <li key={idx} className="text-sm flex items-center gap-2">
+                                <span className={`w-1.5 h-1.5 rounded-full ${i.ok ? "bg-emerald-400" : "bg-red-400"}`} />
+                                <span className="text-neutral-400">{i.name}</span>
                                 {i.details && (
-                                  <span className="text-white/50"> — {i.details}</span>
+                                  <span className="text-neutral-600">— {i.details}</span>
                                 )}
                               </li>
                             ))}
