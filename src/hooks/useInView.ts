@@ -12,7 +12,7 @@ export const useInView = (options: UseInViewOptions = {}) => {
   useEffect(() => {
     const observer = new IntersectionObserver(
       ([entry]) => {
-        if (entry.isIntersecting) setIsInView(true);
+        setIsInView(entry.isIntersecting);
       },
       {
         threshold: options.threshold || 0.1,
@@ -20,8 +20,15 @@ export const useInView = (options: UseInViewOptions = {}) => {
       }
     );
 
-    if (ref.current) observer.observe(ref.current);
-    return () => { if (ref.current) observer.unobserve(ref.current); };
+    if (ref.current) {
+      observer.observe(ref.current);
+    }
+
+    return () => {
+      if (ref.current) {
+        observer.unobserve(ref.current);
+      }
+    };
   }, [options.threshold, options.rootMargin]);
 
   return [ref, isInView] as const;
