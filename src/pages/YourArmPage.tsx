@@ -227,8 +227,8 @@ export default function YourArmPage() {
 
       {/* Configuration Modal */}
       {modalOpen && selected && (
-        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4" role="dialog" aria-modal="true">
-          <div className="w-full max-w-6xl h-[85vh] rounded-[28px] overflow-hidden border border-white/[0.06] bg-neutral-950 shadow-2xl relative">
+        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4 overflow-y-auto" role="dialog" aria-modal="true">
+          <div className="w-full max-w-6xl max-h-[90vh] rounded-[28px] overflow-hidden border border-white/[0.06] bg-neutral-950 shadow-2xl relative my-auto">
             <button onClick={() => setModalOpen(false)} className="absolute top-4 right-4 z-20 w-10 h-10 rounded-full bg-white/[0.05] border border-white/[0.08] flex items-center justify-center text-neutral-400 hover:text-white hover:bg-white/[0.1] transition-all duration-300">
               <X size={18} />
             </button>
