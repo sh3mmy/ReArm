@@ -1,8 +1,35 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+@import "tailwindcss";
 
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@theme {
+  --color-neutral-50: #fafafa;
+  --color-neutral-100: #f5f5f5;
+  --color-neutral-200: #e5e5e5;
+  --color-neutral-300: #d4d4d4;
+  --color-neutral-400: #a3a3a3;
+  --color-neutral-500: #737373;
+  --color-neutral-600: #525252;
+  --color-neutral-700: #404040;
+  --color-neutral-800: #262626;
+  --color-neutral-900: #171717;
+  --color-neutral-950: #0a0a0a;
+
+  --color-accent-50: #fdf9f3;
+  --color-accent-100: #f5ebd8;
+  --color-accent-200: #e8d4b0;
+  --color-accent-300: #d4b88a;
+  --color-accent-400: #c9a87c;
+  --color-accent-500: #b08d5f;
+  --color-accent-600: #8f7048;
+  --color-accent-700: #6e5536;
+  --color-accent-800: #4d3a25;
+  --color-accent-900: #2c2114;
+
+  --font-family-sans: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+
+  --ease-premium: cubic-bezier(0.23, 1, 0.32, 1);
+  --ease-smooth: cubic-bezier(0.4, 0, 0.2, 1);
+}
 
 html {
   scroll-behavior: smooth;
@@ -15,79 +42,80 @@ body {
   background: #0a0a0a;
   color: #fafafa;
   overflow-x: hidden;
+  min-height: 100vh;
 }
 
-/* Premium selection color */
 ::selection {
   background: rgba(201, 168, 124, 0.3);
   color: #fafafa;
 }
 
-/* Scrollbar styling */
-::-webkit-scrollbar {
-  width: 6px;
-}
-::-webkit-scrollbar-track {
-  background: #0a0a0a;
-}
-::-webkit-scrollbar-thumb {
-  background: #404040;
-  border-radius: 3px;
-}
-::-webkit-scrollbar-thumb:hover {
-  background: #525252;
-}
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: #0a0a0a; }
+::-webkit-scrollbar-thumb { background: #404040; border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: #525252; }
 
-/* Premium button hover effect */
 @layer components {
   .btn-premium {
-    @apply relative overflow-hidden inline-flex items-center justify-center px-8 py-4 bg-white text-neutral-950 font-medium text-sm tracking-wide rounded-full transition-all duration-400 ease-premium;
+    @apply relative overflow-hidden inline-flex items-center justify-center px-8 py-4 bg-white text-neutral-950 font-medium text-sm tracking-wide rounded-full transition-all duration-400;
+    transition-timing-function: var(--ease-premium);
   }
   .btn-premium:hover {
     @apply bg-neutral-100 scale-[1.02];
     box-shadow: 0 0 40px rgba(255,255,255,0.1);
   }
-  .btn-premium:active {
-    @apply scale-[0.98];
-  }
+  .btn-premium:active { @apply scale-[0.98]; }
 
   .btn-outline {
-    @apply relative overflow-hidden inline-flex items-center justify-center px-8 py-4 border border-white/20 text-white font-medium text-sm tracking-wide rounded-full transition-all duration-400 ease-premium;
+    @apply relative overflow-hidden inline-flex items-center justify-center px-8 py-4 border border-white/20 text-white font-medium text-sm tracking-wide rounded-full transition-all duration-400;
+    transition-timing-function: var(--ease-premium);
   }
-  .btn-outline:hover {
-    @apply border-white/40 bg-white/5;
+  .btn-outline:hover { @apply border-white/40 bg-white/5; }
+
+  .btn-primary {
+    @apply relative overflow-hidden inline-flex items-center justify-center px-8 py-4 bg-accent-400 text-neutral-950 font-medium text-sm tracking-wide rounded-full transition-all duration-400;
+    transition-timing-function: var(--ease-premium);
   }
+  .btn-primary:hover { @apply bg-accent-300 scale-[1.02]; }
+  .btn-primary:active { @apply scale-[0.98]; }
 
   .card-premium {
-    @apply relative rounded-3xl border border-white/[0.06] bg-white/[0.03] backdrop-blur-sm transition-all duration-600 ease-premium;
+    @apply relative rounded-3xl border border-white/[0.06] bg-white/[0.03] backdrop-blur-sm transition-all duration-600;
+    transition-timing-function: var(--ease-premium);
   }
   .card-premium:hover {
     @apply bg-white/[0.05] border-white/[0.1];
     box-shadow: 0 8px 32px rgba(0,0,0,0.3), 0 0 0 1px rgba(255,255,255,0.05);
   }
 
-  .text-gradient {
-    @apply bg-clip-text text-transparent bg-gradient-to-r from-white via-white to-neutral-400;
+  .section-label {
+    @apply text-xs uppercase text-neutral-500 tracking-[0.15em] font-medium;
   }
 
-  .text-gradient-accent {
-    @apply bg-clip-text text-transparent bg-gradient-to-r from-accent-300 to-accent-500;
+  .divider-premium {
+    @apply w-16 h-px bg-gradient-to-r from-accent-400 to-transparent;
   }
 
   .nav-glass {
     @apply backdrop-blur-xl bg-black/40 border-b border-white/[0.06];
   }
 
-  .section-label {
-    @apply text-label uppercase text-neutral-500 tracking-[0.15em];
+  .link-underline {
+    position: relative;
   }
-
-  .divider-premium {
-    @apply w-16 h-px bg-gradient-to-r from-accent-400 to-transparent;
+  .link-underline::after {
+    content: '';
+    position: absolute;
+    bottom: -2px;
+    left: 0;
+    width: 0;
+    height: 1px;
+    background: currentColor;
+    transition: width 0.4s var(--ease-premium);
   }
+  .link-underline:hover::after { width: 100%; }
 }
 
-/* Ambient background glow */
 .ambient-glow {
   position: fixed;
   inset: 0;
@@ -98,59 +126,6 @@ body {
     radial-gradient(800px 400px at 80% 20%, rgba(255,255,255,0.02), transparent);
 }
 
-/* Image treatment */
-.img-premium {
-  @apply rounded-2xl;
-  filter: contrast(1.05) saturate(0.95);
-}
-
-/* Smooth image loading */
-.img-fade-in {
-  opacity: 0;
-  transition: opacity 0.8s ease-out;
-}
-.img-fade-in.loaded {
-  opacity: 1;
-}
-
-/* Typography refinements */
-.heading-hero {
-  font-weight: 300;
-  letter-spacing: -0.03em;
-  line-height: 0.95;
-}
-
-.heading-section {
-  font-weight: 400;
-  letter-spacing: -0.02em;
-  line-height: 1.05;
-}
-
-.body-premium {
-  font-weight: 300;
-  line-height: 1.7;
-  color: rgba(255,255,255,0.7);
-}
-
-/* Link underline animation */
-.link-underline {
-  position: relative;
-}
-.link-underline::after {
-  content: '';
-  position: absolute;
-  bottom: -2px;
-  left: 0;
-  width: 0;
-  height: 1px;
-  background: currentColor;
-  transition: width 0.4s cubic-bezier(0.23, 1, 0.32, 1);
-}
-.link-underline:hover::after {
-  width: 100%;
-}
-
-/* Grid pattern overlay */
 .grid-pattern {
   background-image:
     linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px),

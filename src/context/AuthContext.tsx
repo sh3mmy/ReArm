@@ -1,22 +1,14 @@
-// src/context/AuthContext.tsx
-import React, {
-  createContext,
-  useContext,
-  useEffect,
-  useMemo,
-  useState,
-} from "react";
-import type { AuthUser } from "../lib/authuser";
-import {
-  signInWithEmail,
-  signUpWithEmail,
-  signInWithGoogle,
-  devSkipUser,
-} from "../lib/authuser";
+import React, { createContext, useContext, useEffect, useMemo, useState } from "react";
+
+export type AuthUser = {
+  uid: string;
+  displayName: string;
+  email: string;
+  photoURL?: string;
+};
 
 type AuthContextValue = {
   user: AuthUser | null;
-  // actions
   signInEmail: (email: string, password: string) => Promise<void>;
   signUpEmail: (name: string, email: string, password: string) => Promise<void>;
   signInGoogle: () => Promise<void>;
@@ -27,73 +19,72 @@ type AuthContextValue = {
 const AuthContext = createContext<AuthContextValue | undefined>(undefined);
 const STORAGE_KEY = "rearm_auth_user";
 
-export const AuthProvider: React.FC<React.PropsWithChildren> = ({
-  children,
-}) => {
+export const AuthProvider: React.FC<React.PropsWithChildren> = ({ children }) => {
   const [user, setUser] = useState<AuthUser | null>(null);
 
-  // Rehydrate from localStorage once on mount
   useEffect(() => {
     try {
       const raw = localStorage.getItem(STORAGE_KEY);
       if (raw) setUser(JSON.parse(raw));
-    } catch {
-      // ignore
-    }
+    } catch {}
   }, []);
 
-  // Persist to localStorage whenever user changes
   useEffect(() => {
     try {
       if (user) localStorage.setItem(STORAGE_KEY, JSON.stringify(user));
       else localStorage.removeItem(STORAGE_KEY);
-    } catch {
-      // ignore
-    }
+    } catch {}
   }, [user]);
 
-  // --- Actions (wrap your mock service) ---
-  const signInEmail = async (email: string, password: string) => {
-    const u = await signInWithEmail(email, password);
+  const signInEmail = async (email: string, _password: string) => {
+    const u: AuthUser = {
+      uid: "local-" + email,
+      displayName: email.split("@")[0],
+      email,
+      photoURL: `https://api.dicebear.com/8.x/initials/svg?seed=${encodeURIComponent(email)}`,
+    };
     setUser(u);
   };
 
-  const signUpEmail = async (name: string, email: string, password: string) => {
-    const u = await signUpWithEmail(name, email, password);
+  const signUpEmail = async (name: string, email: string, _password: string) => {
+    const u: AuthUser = {
+      uid: "local-" + email,
+      displayName: name || email.split("@")[0],
+      email,
+      photoURL: `https://api.dicebear.com/8.x/initials/svg?seed=${encodeURIComponent(name || email)}`,
+    };
     setUser(u);
   };
 
   const signInGoogle = async () => {
-    const u = await signInWithGoogle();
+    const u: AuthUser = {
+      uid: "google-mock",
+      displayName: "ReArm Pilot",
+      email: "pilot@example.com",
+      photoURL: "https://api.dicebear.com/8.x/shapes/svg?seed=ReArm",
+    };
     setUser(u);
   };
 
   const devSkipLogin = () => {
-    const u = devSkipUser();
+    const u: AuthUser = {
+      uid: "dev-skip",
+      displayName: "Dev User",
+      email: "dev@rearm.local",
+      photoURL: "https://api.dicebear.com/8.x/identicon/svg?seed=DevUser",
+    };
     setUser(u);
   };
 
   const signOut = () => setUser(null);
 
-  const value = useMemo(
-    () => ({
-      user,
-      signInEmail,
-      signUpEmail,
-      signInGoogle,
-      devSkipLogin,
-      signOut,
-    }),
-    [user]
-  );
+  const value = useMemo(() => ({ user, signInEmail, signUpEmail, signInGoogle, devSkipLogin, signOut }), [user]);
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };
 
 export function useAuth(): AuthContextValue {
   const ctx = useContext(AuthContext);
-  if (!ctx) {
-    throw new Error("useAuth must be used within <AuthProvider>");
-  }
+  if (!ctx) throw new Error("useAuth must be used within <AuthProvider>");
   return ctx;
 }

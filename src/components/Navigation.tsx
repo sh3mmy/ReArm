@@ -30,32 +30,23 @@ const Navigation: React.FC = () => {
   return (
     <>
       <nav
-        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ease-premium ${
-          scrolled
-            ? "nav-glass"
-            : "bg-transparent"
+        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${
+          scrolled ? "nav-glass" : "bg-transparent"
         }`}
       >
         <div className="max-w-7xl mx-auto px-6 lg:px-8">
           <div className="flex justify-between items-center h-16 lg:h-20">
-            {/* Logo */}
-            <Link
-              to="/"
-              className="text-white font-medium text-lg tracking-tight hover:opacity-70 transition-opacity duration-300"
-            >
+            <Link to="/" className="text-white font-medium text-lg tracking-tight hover:opacity-70 transition-opacity duration-300">
               ReArm<span className="text-accent-400 text-xs align-top">®</span>
             </Link>
 
-            {/* Desktop Links */}
             <div className="hidden lg:flex items-center space-x-10">
               {navLinks.map((link) => (
                 <Link
                   key={link.label}
                   to={link.href}
                   className={`relative text-sm font-medium tracking-wide transition-colors duration-300 ${
-                    isActive(link.href)
-                      ? "text-white"
-                      : "text-neutral-400 hover:text-white"
+                    isActive(link.href) ? "text-white" : "text-neutral-400 hover:text-white"
                   }`}
                 >
                   {link.label}
@@ -66,7 +57,6 @@ const Navigation: React.FC = () => {
               ))}
             </div>
 
-            {/* Right side */}
             <div className="flex items-center space-x-4">
               <button
                 onClick={() => setIsAccountOpen(true)}
@@ -90,9 +80,8 @@ const Navigation: React.FC = () => {
         </div>
       </nav>
 
-      {/* Mobile Menu Overlay */}
       <div
-        className={`fixed inset-0 z-40 lg:hidden transition-all duration-500 ease-premium ${
+        className={`fixed inset-0 z-40 lg:hidden transition-all duration-500 ${
           isMobileMenuOpen ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
         }`}
       >
