@@ -1,6 +1,12 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { supabase, type ClinicRow, type AvailabilityRow } from '../lib/supabase';
+import {
+  getClinics,
+  getAvailabilityMap,
+  insertBooking,
+  type ClinicRow,
+  type AvailabilityRow,
+} from '../lib/db';
 import { ChevronLeft, ChevronRight, MapPin, Calendar as CalendarIcon, Clock } from 'lucide-react';
 
 // ----------------------
@@ -10,13 +16,12 @@ type Clinic = ClinicRow;
 
 const STORAGE_KEY = 'rearmSelection';
 
-// UK bounding box for map projection
-// These define the visible area of the background map image
+// UK bounding box for map projection (tuned to the actual map image)
 const MAP_BOUNDS = {
-  minLat: 49.5,   // Southern England
-  maxLat: 56.0,   // Northern Scotland
-  minLng: -6.5,   // Western Ireland/Scotland
-  maxLng: 2.0,    // Eastern England
+  minLat: 49.8,
+  maxLat: 58.8,
+  minLng: -8.2,
+  maxLng: 2.0,
 };
 
 function latLngToPercent(lat: number, lng: number) {
@@ -154,34 +159,29 @@ export default function PrivateDemoPage() {
   const [availability, setAvailability] = useState<AvailabilityRow[]>([]);
   const [loadingClinics, setLoadingClinics] = useState(true);
 
-  // Fetch clinics and availability from Supabase
+  // Fetch clinics and availability from local SQLite
   useEffect(() => {
     async function fetchData() {
       setLoadingClinics(true);
-      const { data: clinicData, error: clinicError } = await supabase
-        .from('clinics')
-        .select('*')
-        .order('id');
-      if (clinicError) {
-        console.error('Failed to load clinics:', clinicError);
-      } else if (clinicData) {
+      try {
+        const clinicData = await getClinics();
         setClinics(clinicData);
-      }
-
-      const { data: availData, error: availError } = await supabase
-        .from('clinic_availability')
-        .select('*');
-      if (availError) {
-        console.error('Failed to load availability:', availError);
-      } else if (availData) {
-        setAvailability(availData);
+        const availMap = await getAvailabilityMap();
+        availabilityMap = availMap;
+        const availRows: AvailabilityRow[] = [];
+        Object.entries(availMap).forEach(([cid, dates]) => {
+          dates.forEach((d) => availRows.push({ id: 0, clinic_id: cid, available_date: d, created_at: '' }));
+        });
+        setAvailability(availRows);
+      } catch (err) {
+        console.error('Failed to load clinics:', err);
       }
       setLoadingClinics(false);
     }
     fetchData();
   }, []);
 
-  // Build availability map
+  // Build availability map (kept for CalendarPopover global access)
   useEffect(() => {
     const map: Record<string, Set<string>> = {};
     for (const row of availability) {
@@ -254,8 +254,7 @@ export default function PrivateDemoPage() {
     if (!valid) return;
     setSubmitting(true);
 
-    // Save booking to Supabase
-    const { error } = await supabase.from('demo_bookings').insert({
+    const { error } = await insertBooking({
       clinic_id: selectedClinic!.id,
       product_number: productNumber === '—' ? null : productNumber,
       finish: finish === '—' ? null : finish,
@@ -308,9 +307,16 @@ export default function PrivateDemoPage() {
 
         {/* Map + clinic list */}
         <div className="grid grid-cols-1 md:grid-cols-[1fr,320px] gap-6 mb-8">
-          {/* Map — CSS-based UK outline with proper geographic marker positions */}
-          <div className="relative h-96 md:h-[28rem] rounded-3xl border border-white/[0.06] overflow-hidden bg-neutral-900/50">
-            {/* Grid background */}
+          {/* Map — resized magnific__talk__20704.png with gold markers at correct geo positions */}
+          <div
+            className="relative h-96 md:h-[28rem] rounded-3xl border border-white/[0.06] overflow-hidden bg-neutral-900/50"
+            style={{
+              backgroundImage: 'url(/assets/magnific__talk__20704.png)',
+              backgroundSize: 'cover',
+              backgroundPosition: 'center',
+            }}
+          >
+            {/* Grid overlay */}
             <div className="absolute inset-0 opacity-20"
               style={{
                 backgroundImage: 'linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px)',
@@ -319,31 +325,6 @@ export default function PrivateDemoPage() {
             />
             {/* Subtle radial glow */}
             <div className="absolute inset-0 opacity-10 pointer-events-none bg-[radial-gradient(600px_300px_at_50%_50%,rgba(201,168,124,0.15),transparent)]" />
-
-            {/* UK outline shape (simplified) rendered with CSS clip-path */}
-            <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-              <svg
-                viewBox="0 0 400 500"
-                className="w-full h-full max-w-md opacity-[0.08]"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                {/* Simplified UK landmass */}
-                <path
-                  d="M180,480 C160,470 140,450 130,420 C120,390 110,360 100,330 C90,300 85,270 90,240 C95,210 105,180 115,150 C125,120 130,90 140,70 C150,50 165,35 180,30 C195,25 210,30 220,45 C230,60 235,80 240,100 C245,120 250,140 255,160 C260,180 265,200 270,220 C275,240 280,260 285,280 C290,300 295,320 300,340 C305,360 310,380 315,400 C320,420 315,440 300,455 C285,470 265,480 245,485 C225,490 200,485 180,480 Z"
-                  fill="rgba(255,255,255,0.15)"
-                  stroke="rgba(255,255,255,0.2)"
-                  strokeWidth="1"
-                />
-                {/* Scotland */}
-                <path
-                  d="M160,30 C150,20 145,10 150,5 C155,0 165,2 175,8 C185,14 195,22 200,30 C205,38 200,45 190,48 C180,51 170,45 160,30 Z"
-                  fill="rgba(255,255,255,0.15)"
-                  stroke="rgba(255,255,255,0.2)"
-                  strokeWidth="1"
-                />
-              </svg>
-            </div>
 
             {/* Compass / orientation hint */}
             <div className="absolute top-4 left-4 flex items-center gap-2 text-neutral-600 text-xs">
@@ -372,14 +353,17 @@ export default function PrivateDemoPage() {
                 >
                   {/* Pulse ring for selected */}
                   {isSelected && (
-                    <span className="absolute inset-0 rounded-full bg-white/20 animate-ping" style={{ animationDuration: '2s' }} />
+                    <span className="absolute inset-0 rounded-full bg-accent-400/20 animate-ping" style={{ animationDuration: '2s' }} />
                   )}
-                  <span className={`relative flex items-center justify-center w-5 h-5 rounded-full border-2 transition-all duration-300 ${
-                    isSelected
-                      ? 'bg-accent-400 border-accent-300 shadow-[0_0_16px_rgba(201,168,124,0.5)] scale-125'
-                      : 'bg-white/70 border-white/90 hover:bg-white hover:scale-110'
-                  }`}>
-                    <span className={`w-1.5 h-1.5 rounded-full ${isSelected ? 'bg-white' : 'bg-neutral-950'}`} />
+                  {/* Dull gold marker dot matching the accent color scheme */}
+                  <span
+                    className={`relative flex items-center justify-center rounded-full border-2 transition-all duration-300 ${
+                      isSelected
+                        ? 'w-6 h-6 bg-accent-400 border-accent-300 shadow-[0_0_16px_rgba(201,168,124,0.6)] scale-125'
+                        : 'w-4 h-4 bg-accent-500/80 border-accent-400/70 hover:bg-accent-400 hover:scale-110'
+                    }`}
+                  >
+                    <span className={`rounded-full ${isSelected ? 'w-2 h-2 bg-white' : 'w-1.5 h-1.5 bg-neutral-950'}`} />
                   </span>
                   {/* Label tooltip */}
                   <span className={`absolute left-full ml-2 top-1/2 -translate-y-1/2 whitespace-nowrap text-xs font-medium px-2 py-1 rounded-lg transition-all duration-300 ${
@@ -402,7 +386,7 @@ export default function PrivateDemoPage() {
             {loadingClinics ? (
               <div className="text-neutral-500 text-sm py-4">Loading…</div>
             ) : (
-              <ul className="space-y-3">
+              <ul className="space-y-3 max-h-[24rem] overflow-y-auto pr-1">
                 {clinics.map((c) => (
                   <li key={c.id}>
                     <button
