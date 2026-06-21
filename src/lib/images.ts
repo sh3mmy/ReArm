@@ -34,7 +34,7 @@ import ENG_LAB2 from '../../assets/engineering-lab-2.png';
 import ENG_LAB3 from '../../assets/engineering-lab-3.png';
 
 /** Booking */
-import CLINIC_BG from '../../assets/magnific__talk__20704.png';
+import CLINIC_BG from '../../assets/clinic-bg.png';
 
 export const CARD_IMAGE = {
   HL: HL_FAMILY,
