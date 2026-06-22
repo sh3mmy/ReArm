@@ -306,7 +306,7 @@ export default function PrivateDemoPage() {
           <div className="relative h-96 md:h-[28rem] rounded-3xl border border-white/[0.06] overflow-hidden bg-neutral-900/50">
             {/* UK map background image */}
             <img
-              src="/assets/england.png"
+              src="/assets/magnific__talk__20704.png"
               alt="United Kingdom map"
               className="absolute inset-0 w-full h-full object-contain select-none pointer-events-none"
             />
