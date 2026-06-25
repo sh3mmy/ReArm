@@ -105,6 +105,15 @@ export default function YourArmPage() {
     }
   }, []);
 
+  useEffect(() => {
+    if (!modalOpen) return;
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = prev;
+    };
+  }, [modalOpen]);
+
   const filtered = useMemo(() => {
     return PRODUCTS.filter((p) => {
       const bySeries = seriesFilter === "ALL" || p.series === seriesFilter;
@@ -257,7 +266,7 @@ export default function YourArmPage() {
               <X size={18} />
             </button>
 
-            <div className="grid grid-cols-1 lg:grid-cols-[1.1fr,0.9fr] h-full">
+            <div className="grid grid-cols-1 lg:grid-cols-[1.1fr,0.9fr] h-full min-h-0 overflow-hidden">
               {/* Visual */}
               <div className="relative hidden lg:block bg-neutral-900/30">
                 <div className="absolute inset-0 bg-gradient-to-br from-accent-500/[0.03] to-transparent" />
@@ -273,7 +282,7 @@ export default function YourArmPage() {
               </div>
 
               {/* Right panel */}
-              <div className="h-full grid grid-rows-[auto,1fr,auto] bg-neutral-950">
+              <div className="h-full min-h-0 grid grid-rows-[auto,1fr,auto] bg-neutral-950">
                 {/* Header */}
                 <div className="px-6 pt-6 pb-4 border-b border-white/[0.06]">
                   <div className="text-label text-accent-400/70 mb-2">Configure</div>
@@ -282,7 +291,7 @@ export default function YourArmPage() {
                   </h2>
                 </div>
 
-                <div className="p-6 overflow-auto">
+                <div className="p-6 overflow-y-auto overscroll-contain min-h-0">
                   {/* Materials */}
                   <div className="mb-8">
                     <div className="text-label text-neutral-500 mb-3">Material</div>

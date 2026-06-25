@@ -3,6 +3,7 @@ import React from "react";
 import { Routes, Route } from "react-router-dom";
 
 import Navigation from "./components/Navigation";
+import ScrollToTop from "./components/ScrollToTop";
 
 // Pages
 import LandingPage from "./pages/LandingPage";
@@ -17,6 +18,9 @@ const App: React.FC = () => {
     <div className="min-h-screen flex flex-col bg-neutral-950 text-white">
       {/* Ambient background glow */}
       <div className="ambient-glow" />
+
+      {/* Reset scroll position on route change */}
+      <ScrollToTop />
 
       {/* Top navigation */}
       <Navigation />
