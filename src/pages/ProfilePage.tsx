@@ -89,8 +89,8 @@ const KEY_ICON: Record<KeyType, LucideIcon> = {
 
 const SEED_KEYS: PairedKey[] = [
   { id: "k1", name: "Meta Rayban", type: "glasses" },
-  { id: "k2", name: "", type: "card" },
-  { id: "k3", name: "ReArm Candor", type: "fob", editable: true },
+  { id: "k2", name: "ReArm RL100", type: "card" },
+  { id: "k3", name: "ReArm Candor", type: "glasses", editable: true },
 ];
 
 type MenuItem = { id: string; label: string; icon: LucideIcon };
@@ -99,7 +99,7 @@ const MENU: MenuItem[] = [
   { id: "calibration", label: "Calibration", icon: Crosshair },
   { id: "diagnostics", label: "Diagnostics", icon: Activity },
   { id: "charging", label: "Charging", icon: BatteryCharging },
-  { id: "autogrip", label: "Auto-Grip", icon: Cpu },
+  { id: "autopilot", label: "Autopilot", icon: Cpu },
   { id: "devices", label: "Devices & Pairing", icon: Bluetooth },
   { id: "snapshot", label: "Snapshot", icon: Camera },
   { id: "display", label: "Display", icon: Monitor },
@@ -132,7 +132,7 @@ const ProfilePage: React.FC = () => {
       const next = !prev;
       try {
         localStorage.setItem(LS_DARK, next ? "1" : "0");
-      } catch {}
+      } catch { }
       return next;
     });
   };
@@ -141,16 +141,16 @@ const ProfilePage: React.FC = () => {
     setPlacement(p);
     try {
       localStorage.setItem(LS_PLACEMENT, p);
-    } catch {}
+    } catch { }
   };
 
   const addKey = () => {
     const id = `k_${Math.random().toString(36).slice(2, 7)}`;
-    setKeys((prev) => [...prev, { id, name: "New Key", type: "card", editable: true }]);
+    setKeys((prev) => [...prev, { id, name: "New Device", type: "card", editable: true }]);
   };
 
   const renameKey = (id: string) => {
-    const next = window.prompt("Rename key");
+    const next = window.prompt("Rename Device");
     if (next === null) return;
     setKeys((prev) => prev.map((k) => (k.id === id ? { ...k, name: next } : k)));
   };
@@ -355,7 +355,7 @@ const DevicesPanel: React.FC<{
           style={{ backgroundColor: "var(--p-card)", color: "var(--p-text)" }}
         >
           <Plus size={15} />
-          Add Key
+          Pair Device
         </button>
       </div>
 
@@ -406,7 +406,7 @@ const DevicesPanel: React.FC<{
         })}
         {keys.length === 0 && (
           <li className="px-4 py-6 text-sm text-center" style={{ color: "var(--p-text3)" }}>
-            No keys paired yet.
+            No Devices paired yet.
           </li>
         )}
       </ul>
