@@ -41,18 +41,31 @@ function buildPalette(darkness: number): Record<string, string> {
   const t = Math.max(0, Math.min(100, darkness)) / 100;
   const lerp = (a: number, b: number) => a + (b - a) * t;
   const gray = (l: number) => `hsl(0 0% ${l}%)`;
-  // Border / overlay color flips from black-on-light to white-on-dark.
-  const lineL = t < 0.5 ? 0 : 100;
+
+  // Background smoothly travels white -> grey -> black as a continuous gradient.
+  const bgL = lerp(96, 7);
+  // Surfaces sit just above the background; lift them on dark so cards stay visible.
+  const lightBg = bgL > 50;
+  const surface = (lift: number) =>
+    gray(Math.max(0, Math.min(100, lightBg ? bgL + lift : bgL + lift + 6)));
+
+  // Text contrast is driven by the background's lightness, not interpolated
+  // independently — so it always flips to a readable value (incl. the grey midpoint).
+  const textL = lightBg ? 13 : 96;
+  const text2L = lightBg ? 38 : 72;
+  const text3L = lightBg ? 50 : 58;
+  const lineL = lightBg ? 0 : 100;
+
   return {
-    "--p-bg": gray(lerp(95, 8)),
-    "--p-panel": gray(lerp(100, 14)),
-    "--p-menu": gray(lerp(93, 11)),
-    "--p-card": gray(lerp(97, 18)),
-    "--p-selected": gray(lerp(87, 24)),
-    "--p-text": gray(lerp(13, 97)),
-    "--p-text2": gray(lerp(42, 66)),
-    "--p-text3": gray(lerp(55, 48)),
-    "--p-border": `hsl(0 0% ${lineL}% / ${lerp(0.1, 0.1)})`,
+    "--p-bg": gray(bgL),
+    "--p-panel": surface(4),
+    "--p-menu": surface(2),
+    "--p-card": surface(6),
+    "--p-selected": surface(12),
+    "--p-text": gray(textL),
+    "--p-text2": gray(text2L),
+    "--p-text3": gray(text3L),
+    "--p-border": `hsl(0 0% ${lineL}% / 0.12)`,
     "--p-hover": `hsl(0 0% ${lineL}% / 0.06)`,
     "--p-accent": "#c9a87c",
   };
