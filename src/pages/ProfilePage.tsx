@@ -34,39 +34,37 @@ import {
 
 /* ----------------------------- Theme (darkness) ---------------------------- */
 
-const LS_DARKNESS = "rearm_profile_darkness";
+const LS_DARK = "rearm_profile_dark";
 const LS_PLACEMENT = "rearm_profile_placement";
 
-function buildPalette(darkness: number): Record<string, string> {
-  const t = Math.max(0, Math.min(100, darkness)) / 100;
-  const lerp = (a: number, b: number) => a + (b - a) * t;
-  const gray = (l: number) => `hsl(0 0% ${l}%)`;
-
-  // Background smoothly travels white -> grey -> black as a continuous gradient.
-  const bgL = lerp(96, 7);
-  // Surfaces sit just above the background; lift them on dark so cards stay visible.
-  const lightBg = bgL > 50;
-  const surface = (lift: number) =>
-    gray(Math.max(0, Math.min(100, lightBg ? bgL + lift : bgL + lift + 6)));
-
-  // Text contrast is driven by the background's lightness, not interpolated
-  // independently — so it always flips to a readable value (incl. the grey midpoint).
-  const textL = lightBg ? 13 : 96;
-  const text2L = lightBg ? 38 : 72;
-  const text3L = lightBg ? 50 : 58;
-  const lineL = lightBg ? 0 : 100;
-
+function buildPalette(isDark: boolean): Record<string, string> {
+  // Pure binary black/white theme — no grey backgrounds.
+  if (isDark) {
+    return {
+      "--p-bg": "#000000",
+      "--p-panel": "#0a0a0a",
+      "--p-menu": "#0a0a0a",
+      "--p-card": "#141414",
+      "--p-selected": "#1f1f1f",
+      "--p-text": "#ffffff",
+      "--p-text2": "#d4d4d4",
+      "--p-text3": "#a3a3a3",
+      "--p-border": "hsl(0 0% 100% / 0.14)",
+      "--p-hover": "hsl(0 0% 100% / 0.07)",
+      "--p-accent": "#c9a87c",
+    };
+  }
   return {
-    "--p-bg": gray(bgL),
-    "--p-panel": surface(4),
-    "--p-menu": surface(2),
-    "--p-card": surface(6),
-    "--p-selected": surface(12),
-    "--p-text": gray(textL),
-    "--p-text2": gray(text2L),
-    "--p-text3": gray(text3L),
-    "--p-border": `hsl(0 0% ${lineL}% / 0.12)`,
-    "--p-hover": `hsl(0 0% ${lineL}% / 0.06)`,
+    "--p-bg": "#ffffff",
+    "--p-panel": "#ffffff",
+    "--p-menu": "#ffffff",
+    "--p-card": "#f5f5f5",
+    "--p-selected": "#ebebeb",
+    "--p-text": "#000000",
+    "--p-text2": "#404040",
+    "--p-text3": "#737373",
+    "--p-border": "hsl(0 0% 0% / 0.14)",
+    "--p-hover": "hsl(0 0% 0% / 0.05)",
     "--p-accent": "#c9a87c",
   };
 }
@@ -118,24 +116,25 @@ const MENU: MenuItem[] = [
 const ProfilePage: React.FC = () => {
   const { user } = useAuth();
 
-  const [darkness, setDarkness] = useState<number>(() => {
-    const raw = Number(localStorage.getItem(LS_DARKNESS));
-    return Number.isFinite(raw) && raw > 0 ? raw : 12;
-  });
+  const [isDark, setIsDark] = useState<boolean>(
+    () => localStorage.getItem(LS_DARK) === "1"
+  );
   const [active, setActive] = useState<string>("devices");
   const [keys, setKeys] = useState<PairedKey[]>(SEED_KEYS);
   const [placement, setPlacement] = useState<"both" | "left" | "right">(
     () => (localStorage.getItem(LS_PLACEMENT) as "both" | "left" | "right") || "both"
   );
 
-  const palette = useMemo(() => buildPalette(darkness), [darkness]);
-  const isDark = darkness >= 50;
+  const palette = useMemo(() => buildPalette(isDark), [isDark]);
 
-  const onDarkness = (v: number) => {
-    setDarkness(v);
-    try {
-      localStorage.setItem(LS_DARKNESS, String(v));
-    } catch {}
+  const toggleDark = () => {
+    setIsDark((prev) => {
+      const next = !prev;
+      try {
+        localStorage.setItem(LS_DARK, next ? "1" : "0");
+      } catch {}
+      return next;
+    });
   };
 
   const choosePlacement = (p: "both" | "left" | "right") => {
@@ -189,22 +188,33 @@ const ProfilePage: React.FC = () => {
               </h1>
             </div>
 
-            <label
+            <div
               className="flex items-center gap-3 rounded-full border px-4 py-2"
               style={{ borderColor: "var(--p-border)", backgroundColor: "var(--p-panel)" }}
             >
               <Sun size={16} style={{ color: isDark ? "var(--p-text3)" : "var(--p-accent)" }} />
-              <input
-                type="range"
-                min={0}
-                max={100}
-                value={darkness}
-                onChange={(e) => onDarkness(Number(e.target.value))}
-                aria-label="Adjust profile darkness"
-                className="profile-darkness w-28 md:w-40"
-              />
+              <button
+                type="button"
+                role="switch"
+                aria-checked={isDark}
+                aria-label="Toggle dark mode"
+                onClick={toggleDark}
+                className="relative w-12 h-6 rounded-full transition-colors duration-300"
+                style={{
+                  backgroundColor: isDark ? "var(--p-accent)" : "var(--p-selected)",
+                }}
+              >
+                <span
+                  className="absolute top-0.5 left-0.5 w-5 h-5 rounded-full transition-transform duration-300"
+                  style={{
+                    backgroundColor: isDark ? "#000000" : "#ffffff",
+                    transform: isDark ? "translateX(24px)" : "translateX(0)",
+                    boxShadow: "0 1px 4px rgba(0,0,0,0.3)",
+                  }}
+                />
+              </button>
               <Moon size={16} style={{ color: isDark ? "var(--p-accent)" : "var(--p-text3)" }} />
-            </label>
+            </div>
           </div>
 
           {/* Main grid: render | menu | content */}
