@@ -92,13 +92,13 @@ const CalendarPopover: React.FC<CalendarPopoverProps> = ({ open, clinicId, value
         onPointerDown={(e) => e.stopPropagation()}
       >
         <div className="flex items-center justify-between mb-4">
-          <button type="button" onClick={prev} className="w-8 h-8 rounded-full border border-white/[0.08] flex items-center justify-center text-neutral-400 hover:text-white hover:border-white/20 transition-all duration-200">
+          <button type="button" onClick={prev} className="w-8 h-8 rounded-full border border-white/[0.08] flex items-center justify-center text-neutral-400 hover:text-white hover:border-white/20 transition-all duration-300">
             <ChevronLeft size={16} />
           </button>
           <div className="text-white font-medium text-sm">
             {new Date(year, month - 1, 1).toLocaleString(undefined, { month: 'long', year: 'numeric' })}
           </div>
-          <button type="button" onClick={next} className="w-8 h-8 rounded-full border border-white/[0.08] flex items-center justify-center text-neutral-400 hover:text-white hover:border-white/20 transition-all duration-200">
+          <button type="button" onClick={next} className="w-8 h-8 rounded-full border border-white/[0.08] flex items-center justify-center text-neutral-400 hover:text-white hover:border-white/20 transition-all duration-300">
             <ChevronRight size={16} />
           </button>
         </div>
@@ -167,7 +167,6 @@ export default function PrivateDemoPage() {
         console.error('Failed to load clinics:', clinicError);
       } else if (clinicData) {
         setClinics(clinicData);
-        console.log('Clinics loaded:', clinicData);
       }
 
       const { data: availData, error: availError } = await supabase
@@ -286,7 +285,7 @@ export default function PrivateDemoPage() {
       <span className="text-label text-neutral-500 mb-2 block">{props.label}</span>
       <input
         {...props}
-        className="w-full rounded-2xl bg-white/[0.02] border border-white/[0.06] px-4 py-3 text-white placeholder-neutral-600 outline-none focus:border-white/20 focus:bg-white/[0.03] transition-all duration-200"
+        className="w-full rounded-2xl bg-white/[0.02] border border-white/[0.06] px-4 py-3 text-white placeholder-neutral-600 outline-none focus:border-white/20 focus:bg-white/[0.03] transition-all duration-300 text-sm"
       />
     </label>
   );
@@ -342,45 +341,41 @@ export default function PrivateDemoPage() {
               </div>
             )}
 
-            {/* Clinic markers container */}
-            <div className="absolute inset-0 pointer-events-none z-40">
-              {clinics.map((c) => {
-                const pos = latLngToPercent(c.latitude, c.longitude);
-                const isSelected = selectedClinicId === c.id;
-                console.log(`Clinic: ${c.name}, Lat: ${c.latitude}, Lng: ${c.longitude}, Pos: ${pos.x}%, ${pos.y}%`);
-                return (
-                  <button
-                    key={c.id}
-                    type="button"
-                    onClick={() => { setSelectedClinicId(c.id); setForm({ ...form, date: '', time: '' }); }}
-                    className={`absolute group pointer-events-auto ${isSelected ? 'z-50' : 'z-40'}`}
-                    style={{ left: `${pos.x}%`, top: `${pos.y}%`, transform: 'translate(-50%, -50%)' }}
-                    title={c.name}
-                    aria-label={c.name}
-                  >
-                    {/* Pulse ring for selected */}
-                    {isSelected && (
-                      <span className="absolute inset-0 rounded-full bg-white/20 animate-ping" style={{ animationDuration: '2s' }} />
-                    )}
-                    <span className={`relative flex items-center justify-center w-5 h-5 rounded-full border-2 transition-all duration-300 ${
-                      isSelected
-                        ? 'bg-accent-400 border-accent-300 shadow-[0_0_16px_rgba(201,168,124,0.5)] scale-125'
-                        : 'bg-white/70 border-white/90 hover:bg-white hover:scale-110'
-                    }`}>
-                      <span className={`w-1.5 h-1.5 rounded-full ${isSelected ? 'bg-white' : 'bg-neutral-950'}`} />
-                    </span>
-                    {/* Label tooltip */}
-                    <span className={`absolute left-full ml-2 top-1/2 -translate-y-1/2 whitespace-nowrap text-xs font-medium px-2 py-1 rounded-lg transition-all duration-300 ${
-                      isSelected
-                        ? 'bg-white/10 text-white opacity-100'
-                        : 'bg-white/5 text-neutral-400 opacity-0 group-hover:opacity-100'
-                    }`}>
-                      {c.name}
-                    </span>
-                  </button>
-                );
-              })}
-            </div>
+            {clinics.map((c) => {
+              const pos = latLngToPercent(c.latitude, c.longitude);
+              const isSelected = selectedClinicId === c.id;
+              return (
+                <button
+                  key={c.id}
+                  type="button"
+                  onClick={() => { setSelectedClinicId(c.id); setForm({ ...form, date: '', time: '' }); }}
+                  className={`absolute z-10 group ${isSelected ? 'z-20' : ''}`}
+                  style={{ left: `${pos.x}%`, top: `${pos.y}%`, transform: 'translate(-50%, -50%)' }}
+                  title={c.name}
+                  aria-label={c.name}
+                >
+                  {/* Pulse ring for selected */}
+                  {isSelected && (
+                    <span className="absolute inset-0 rounded-full bg-white/20 animate-ping" style={{ animationDuration: '2s' }} />
+                  )}
+                  <span className={`relative flex items-center justify-center w-5 h-5 rounded-full border-2 transition-all duration-300 ${
+                    isSelected
+                      ? 'bg-accent-400 border-accent-300 shadow-[0_0_16px_rgba(201,168,124,0.5)] scale-125'
+                      : 'bg-white/70 border-white/90 hover:bg-white hover:scale-110'
+                  }`}>
+                    <span className={`w-1.5 h-1.5 rounded-full ${isSelected ? 'bg-white' : 'bg-neutral-950'}`} />
+                  </span>
+                  {/* Label tooltip */}
+                  <span className={`absolute left-full ml-2 top-1/2 -translate-y-1/2 whitespace-nowrap text-xs font-medium px-2 py-1 rounded-lg transition-all duration-300 ${
+                    isSelected
+                      ? 'bg-white/10 text-white opacity-100'
+                      : 'bg-white/5 text-neutral-400 opacity-0 group-hover:opacity-100'
+                  }`}>
+                    {c.name}
+                  </span>
+                </button>
+              );
+            })}
           </div>
 
           <aside className="rounded-3xl border border-white/[0.06] p-5 bg-white/[0.02] backdrop-blur-sm">
@@ -523,7 +518,7 @@ export default function PrivateDemoPage() {
                     placeholder="Anything we should prepare or be aware of?"
                     value={form.notes}
                     onChange={(e) => setForm({ ...form, notes: e.target.value })}
-                    className="w-full rounded-2xl bg-white/[0.02] border border-white/[0.06] px-4 py-3 text-white placeholder-neutral-600 outline-none focus:border-white/20 focus:bg-white/[0.03] transition-all duration-200"
+                    className="w-full rounded-2xl bg-white/[0.02] border border-white/[0.06] px-4 py-3 text-white placeholder-neutral-600 outline-none focus:border-white/20 focus:bg-white/[0.03] transition-all duration-300 text-sm"
                   />
                 </label>
 
@@ -531,15 +526,15 @@ export default function PrivateDemoPage() {
                 <div className="rounded-2xl border border-white/[0.06] p-5 bg-white/[0.02] space-y-3">
                   <label className="flex items-start gap-3 cursor-pointer group">
                     <input type="checkbox" className="mt-1 accent-white" checked={agreeTerms} onChange={(e) => setAgreeTerms(e.target.checked)} required />
-                    <span className="text-sm text-neutral-400 group-hover:text-neutral-300 transition-colors duration-200">I agree to the <a href="#" className="text-white hover:underline">Terms & Conditions</a></span>
+                    <span className="text-sm text-neutral-400 group-hover:text-neutral-300 transition-colors duration-200">I agree to the <a href="#" className="text-white hover:underline">Terms & Conditions</a>.</span>
                   </label>
                   <label className="flex items-start gap-3 cursor-pointer group">
                     <input type="checkbox" className="mt-1 accent-white" checked={agreePrivacy} onChange={(e) => setAgreePrivacy(e.target.checked)} required />
-                    <span className="text-sm text-neutral-400 group-hover:text-neutral-300 transition-colors duration-200">I agree to how ReArm will use my information as described in the <a href="#" className="text-white hover:underline">Privacy Policy</a></span>
+                    <span className="text-sm text-neutral-400 group-hover:text-neutral-300 transition-colors duration-200">I agree to how ReArm will use my information as described in the <a href="#" className="text-white hover:underline">Privacy Notice</a>.</span>
                   </label>
                   <label className="flex items-start gap-3 cursor-pointer group">
                     <input type="checkbox" className="mt-1 accent-white" checked={agreeMarketing} onChange={(e) => setAgreeMarketing(e.target.checked)} />
-                    <span className="text-sm text-neutral-400 group-hover:text-neutral-300 transition-colors duration-200">I agree to receive occasional product updates and marketing emails (optional)</span>
+                    <span className="text-sm text-neutral-400 group-hover:text-neutral-300 transition-colors duration-200">I agree to receive occasional product updates and marketing emails (optional).</span>
                   </label>
                 </div>
 
