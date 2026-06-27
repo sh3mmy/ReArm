@@ -167,6 +167,7 @@ export default function PrivateDemoPage() {
         console.error('Failed to load clinics:', clinicError);
       } else if (clinicData) {
         setClinics(clinicData);
+        console.log('Clinics loaded:', clinicData);
       }
 
       const { data: availData, error: availError } = await supabase
@@ -315,15 +316,14 @@ export default function PrivateDemoPage() {
             <img
               src={englandMapUrl}
               alt="UK Map"
-              className="absolute inset-0 w-full h-full object-cover"
+              className="absolute inset-0 w-full h-full object-cover pointer-events-none"
             />
 
             {/* Grid background overlay */}
-            <div className="absolute inset-0 opacity-20"
+            <div className="absolute inset-0 opacity-20 pointer-events-none"
               style={{
                 backgroundImage: 'linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px)',
-                backgroundSize: '40px 40px',
-                pointerEvents: 'none'
+                backgroundSize: '40px 40px'
               }}
             />
 
@@ -331,52 +331,56 @@ export default function PrivateDemoPage() {
             <div className="absolute inset-0 opacity-10 pointer-events-none bg-[radial-gradient(600px_300px_at_50%_50%,rgba(201,168,124,0.15),transparent)]" />
 
             {/* Compass / orientation hint */}
-            <div className="absolute top-4 left-4 flex items-center gap-2 text-neutral-600 text-xs z-5 pointer-events-none">
+            <div className="absolute top-4 left-4 flex items-center gap-2 text-neutral-600 text-xs z-20 pointer-events-none">
               <MapPin size={12} />
               <span>United Kingdom</span>
             </div>
 
             {loadingClinics && (
-              <div className="absolute inset-0 flex items-center justify-center z-10">
+              <div className="absolute inset-0 flex items-center justify-center z-30">
                 <div className="text-neutral-500 text-sm">Loading clinics…</div>
               </div>
             )}
 
-            {clinics.map((c) => {
-              const pos = latLngToPercent(c.latitude, c.longitude);
-              const isSelected = selectedClinicId === c.id;
-              return (
-                <button
-                  key={c.id}
-                  type="button"
-                  onClick={() => { setSelectedClinicId(c.id); setForm({ ...form, date: '', time: '' }); }}
-                  className={`absolute z-10 group ${isSelected ? 'z-20' : ''}`}
-                  style={{ left: `${pos.x}%`, top: `${pos.y}%`, transform: 'translate(-50%, -50%)' }}
-                  title={c.name}
-                  aria-label={c.name}
-                >
-                  {/* Pulse ring for selected */}
-                  {isSelected && (
-                    <span className="absolute inset-0 rounded-full bg-white/20 animate-ping" style={{ animationDuration: '2s' }} />
-                  )}
-                  <span className={`relative flex items-center justify-center w-5 h-5 rounded-full border-2 transition-all duration-300 ${
-                    isSelected
-                      ? 'bg-accent-400 border-accent-300 shadow-[0_0_16px_rgba(201,168,124,0.5)] scale-125'
-                      : 'bg-white/70 border-white/90 hover:bg-white hover:scale-110'
-                  }`}>
-                    <span className={`w-1.5 h-1.5 rounded-full ${isSelected ? 'bg-white' : 'bg-neutral-950'}`} />
-                  </span>
-                  {/* Label tooltip */}
-                  <span className={`absolute left-full ml-2 top-1/2 -translate-y-1/2 whitespace-nowrap text-xs font-medium px-2 py-1 rounded-lg transition-all duration-300 ${
-                    isSelected
-                      ? 'bg-white/10 text-white opacity-100'
-                      : 'bg-white/5 text-neutral-400 opacity-0 group-hover:opacity-100'
-                  }`}>
-                    {c.name}
-                  </span>
-                </button>
-              );
-            })}
+            {/* Clinic markers container */}
+            <div className="absolute inset-0 pointer-events-none z-40">
+              {clinics.map((c) => {
+                const pos = latLngToPercent(c.latitude, c.longitude);
+                const isSelected = selectedClinicId === c.id;
+                console.log(`Clinic: ${c.name}, Lat: ${c.latitude}, Lng: ${c.longitude}, Pos: ${pos.x}%, ${pos.y}%`);
+                return (
+                  <button
+                    key={c.id}
+                    type="button"
+                    onClick={() => { setSelectedClinicId(c.id); setForm({ ...form, date: '', time: '' }); }}
+                    className={`absolute group pointer-events-auto ${isSelected ? 'z-50' : 'z-40'}`}
+                    style={{ left: `${pos.x}%`, top: `${pos.y}%`, transform: 'translate(-50%, -50%)' }}
+                    title={c.name}
+                    aria-label={c.name}
+                  >
+                    {/* Pulse ring for selected */}
+                    {isSelected && (
+                      <span className="absolute inset-0 rounded-full bg-white/20 animate-ping" style={{ animationDuration: '2s' }} />
+                    )}
+                    <span className={`relative flex items-center justify-center w-5 h-5 rounded-full border-2 transition-all duration-300 ${
+                      isSelected
+                        ? 'bg-accent-400 border-accent-300 shadow-[0_0_16px_rgba(201,168,124,0.5)] scale-125'
+                        : 'bg-white/70 border-white/90 hover:bg-white hover:scale-110'
+                    }`}>
+                      <span className={`w-1.5 h-1.5 rounded-full ${isSelected ? 'bg-white' : 'bg-neutral-950'}`} />
+                    </span>
+                    {/* Label tooltip */}
+                    <span className={`absolute left-full ml-2 top-1/2 -translate-y-1/2 whitespace-nowrap text-xs font-medium px-2 py-1 rounded-lg transition-all duration-300 ${
+                      isSelected
+                        ? 'bg-white/10 text-white opacity-100'
+                        : 'bg-white/5 text-neutral-400 opacity-0 group-hover:opacity-100'
+                    }`}>
+                      {c.name}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
           </div>
 
           <aside className="rounded-3xl border border-white/[0.06] p-5 bg-white/[0.02] backdrop-blur-sm">
