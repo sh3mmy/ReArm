@@ -12,18 +12,21 @@ type Clinic = ClinicRow;
 const STORAGE_KEY = 'rearmSelection';
 
 // UK bounding box for map projection
-// These define the visible area of the background map image
+// Adjusted to ensure ALL UK clinics fit within the map
 const MAP_BOUNDS = {
-  minLat: 49.5,   // Southern England
-  maxLat: 56.0,   // Northern Scotland
-  minLng: -6.5,   // Western Ireland/Scotland
-  maxLng: 2.0,    // Eastern England
+  minLat: 49.0,    // Southern coast
+  maxLat: 57.0,    // Northern Scotland
+  minLng: -8.0,    // Western
+  maxLng: 3.0,     // Eastern
 };
 
 function latLngToPercent(lat: number, lng: number) {
+  console.log(`Converting lat=${lat}, lng=${lng}`);
   const x = ((lng - MAP_BOUNDS.minLng) / (MAP_BOUNDS.maxLng - MAP_BOUNDS.minLng)) * 100;
   const y = ((MAP_BOUNDS.maxLat - lat) / (MAP_BOUNDS.maxLat - MAP_BOUNDS.minLat)) * 100;
-  return { x: Math.max(0, Math.min(100, x)), y: Math.max(0, Math.min(100, y)) };
+  const clamped = { x: Math.max(0, Math.min(100, x)), y: Math.max(0, Math.min(100, y)) };
+  console.log(`Result: x=${clamped.x}%, y=${clamped.y}%`);
+  return clamped;
 }
 
 // ----------------------
@@ -166,6 +169,10 @@ export default function PrivateDemoPage() {
       if (clinicError) {
         console.error('Failed to load clinics:', clinicError);
       } else if (clinicData) {
+        console.log('📍 Clinics loaded:', clinicData);
+        clinicData.forEach(c => {
+          console.log(`  - ${c.name}: lat=${c.latitude}, lng=${c.longitude}`);
+        });
         setClinics(clinicData);
       }
 
@@ -309,13 +316,13 @@ export default function PrivateDemoPage() {
 
         {/* Map + clinic list */}
         <div className="grid grid-cols-1 md:grid-cols-[1fr,320px] gap-6 mb-8">
-          {/* Map with background image */}
+          {/* Map container */}
           <div className="relative h-96 md:h-[28rem] rounded-3xl border border-white/[0.06] overflow-hidden bg-neutral-900/50">
             {/* Background map image */}
             <img
               src={englandMapUrl}
               alt="UK Map"
-              className="absolute inset-0 w-full h-full object-cover pointer-events-none"
+              className="absolute inset-0 w-full h-full object-cover"
             />
 
             {/* Grid background overlay */}
@@ -341,39 +348,59 @@ export default function PrivateDemoPage() {
               </div>
             )}
 
-            {clinics.map((c) => {
+            {/* Clinic markers */}
+            {!loadingClinics && clinics.map((c) => {
               const pos = latLngToPercent(c.latitude, c.longitude);
               const isSelected = selectedClinicId === c.id;
               return (
-                <button
+                <div
                   key={c.id}
-                  type="button"
-                  onClick={() => { setSelectedClinicId(c.id); setForm({ ...form, date: '', time: '' }); }}
-                  className={`absolute z-10 group ${isSelected ? 'z-20' : ''}`}
-                  style={{ left: `${pos.x}%`, top: `${pos.y}%`, transform: 'translate(-50%, -50%)' }}
-                  title={c.name}
-                  aria-label={c.name}
+                  className="absolute"
+                  style={{
+                    left: `${pos.x}%`,
+                    top: `${pos.y}%`,
+                    transform: 'translate(-50%, -50%)',
+                    zIndex: isSelected ? 50 : 10,
+                  }}
                 >
-                  {/* Pulse ring for selected */}
-                  {isSelected && (
-                    <span className="absolute inset-0 rounded-full bg-white/20 animate-ping" style={{ animationDuration: '2s' }} />
-                  )}
-                  <span className={`relative flex items-center justify-center w-5 h-5 rounded-full border-2 transition-all duration-300 ${
-                    isSelected
-                      ? 'bg-accent-400 border-accent-300 shadow-[0_0_16px_rgba(201,168,124,0.5)] scale-125'
-                      : 'bg-white/70 border-white/90 hover:bg-white hover:scale-110'
-                  }`}>
-                    <span className={`w-1.5 h-1.5 rounded-full ${isSelected ? 'bg-white' : 'bg-neutral-950'}`} />
-                  </span>
-                  {/* Label tooltip */}
-                  <span className={`absolute left-full ml-2 top-1/2 -translate-y-1/2 whitespace-nowrap text-xs font-medium px-2 py-1 rounded-lg transition-all duration-300 ${
-                    isSelected
-                      ? 'bg-white/10 text-white opacity-100'
-                      : 'bg-white/5 text-neutral-400 opacity-0 group-hover:opacity-100'
-                  }`}>
-                    {c.name}
-                  </span>
-                </button>
+                  <button
+                    type="button"
+                    onClick={() => { setSelectedClinicId(c.id); setForm({ ...form, date: '', time: '' }); }}
+                    className="group relative flex flex-col items-center"
+                    title={c.name}
+                    aria-label={c.name}
+                  >
+                    {/* Pulse ring for selected */}
+                    {isSelected && (
+                      <span
+                        className="absolute inset-0 rounded-full bg-white/20 animate-ping"
+                        style={{ animationDuration: '2s', top: '-50%', left: '-50%', width: '200%', height: '200%' }}
+                      />
+                    )}
+
+                    {/* Dot */}
+                    <span
+                      className={`relative flex items-center justify-center w-5 h-5 rounded-full border-2 transition-all duration-300 ${
+                        isSelected
+                          ? 'bg-accent-400 border-accent-300 shadow-[0_0_16px_rgba(201,168,124,0.5)] scale-125'
+                          : 'bg-white/70 border-white/90 hover:bg-white hover:scale-110'
+                      }`}
+                    >
+                      <span className={`w-1.5 h-1.5 rounded-full ${isSelected ? 'bg-white' : 'bg-neutral-950'}`} />
+                    </span>
+
+                    {/* Label tooltip */}
+                    <span
+                      className={`absolute top-full mt-2 whitespace-nowrap text-xs font-medium px-2 py-1 rounded-lg transition-all duration-300 pointer-events-none ${
+                        isSelected
+                          ? 'bg-white/10 text-white opacity-100'
+                          : 'bg-white/5 text-neutral-400 opacity-0 group-hover:opacity-100'
+                      }`}
+                    >
+                      {c.name}
+                    </span>
+                  </button>
+                </div>
               );
             })}
           </div>
