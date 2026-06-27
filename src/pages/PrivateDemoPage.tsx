@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { supabase, type ClinicRow, type AvailabilityRow } from '../lib/supabase';
 import { ChevronLeft, ChevronRight, MapPin, Calendar as CalendarIcon, Clock } from 'lucide-react';
+import englandMapUrl from '../../assets/england_map.png';
 
 // ----------------------
 // Types
@@ -91,13 +92,13 @@ const CalendarPopover: React.FC<CalendarPopoverProps> = ({ open, clinicId, value
         onPointerDown={(e) => e.stopPropagation()}
       >
         <div className="flex items-center justify-between mb-4">
-          <button type="button" onClick={prev} className="w-8 h-8 rounded-full border border-white/[0.08] flex items-center justify-center text-neutral-400 hover:text-white hover:border-white/20 transition-all duration-300">
+          <button type="button" onClick={prev} className="w-8 h-8 rounded-full border border-white/[0.08] flex items-center justify-center text-neutral-400 hover:text-white hover:border-white/20 transition-all duration-200">
             <ChevronLeft size={16} />
           </button>
           <div className="text-white font-medium text-sm">
             {new Date(year, month - 1, 1).toLocaleString(undefined, { month: 'long', year: 'numeric' })}
           </div>
-          <button type="button" onClick={next} className="w-8 h-8 rounded-full border border-white/[0.08] flex items-center justify-center text-neutral-400 hover:text-white hover:border-white/20 transition-all duration-300">
+          <button type="button" onClick={next} className="w-8 h-8 rounded-full border border-white/[0.08] flex items-center justify-center text-neutral-400 hover:text-white hover:border-white/20 transition-all duration-200">
             <ChevronRight size={16} />
           </button>
         </div>
@@ -284,7 +285,7 @@ export default function PrivateDemoPage() {
       <span className="text-label text-neutral-500 mb-2 block">{props.label}</span>
       <input
         {...props}
-        className="w-full rounded-2xl bg-white/[0.02] border border-white/[0.06] px-4 py-3 text-white placeholder-neutral-600 outline-none focus:border-white/20 focus:bg-white/[0.03] transition-all duration-300 text-sm"
+        className="w-full rounded-2xl bg-white/[0.02] border border-white/[0.06] px-4 py-3 text-white placeholder-neutral-600 outline-none focus:border-white/20 focus:bg-white/[0.03] transition-all duration-200"
       />
     </label>
   );
@@ -308,51 +309,35 @@ export default function PrivateDemoPage() {
 
         {/* Map + clinic list */}
         <div className="grid grid-cols-1 md:grid-cols-[1fr,320px] gap-6 mb-8">
-          {/* Map — CSS-based UK outline with proper geographic marker positions */}
+          {/* Map with background image */}
           <div className="relative h-96 md:h-[28rem] rounded-3xl border border-white/[0.06] overflow-hidden bg-neutral-900/50">
-            {/* Grid background */}
+            {/* Background map image */}
+            <img
+              src={englandMapUrl}
+              alt="UK Map"
+              className="absolute inset-0 w-full h-full object-cover"
+            />
+
+            {/* Grid background overlay */}
             <div className="absolute inset-0 opacity-20"
               style={{
                 backgroundImage: 'linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px)',
-                backgroundSize: '40px 40px'
+                backgroundSize: '40px 40px',
+                pointerEvents: 'none'
               }}
             />
+
             {/* Subtle radial glow */}
             <div className="absolute inset-0 opacity-10 pointer-events-none bg-[radial-gradient(600px_300px_at_50%_50%,rgba(201,168,124,0.15),transparent)]" />
 
-            {/* UK outline shape (simplified) rendered with CSS clip-path */}
-            <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-              <svg
-                viewBox="0 0 400 500"
-                className="w-full h-full max-w-md opacity-[0.08]"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                {/* Simplified UK landmass */}
-                <path
-                  d="M180,480 C160,470 140,450 130,420 C120,390 110,360 100,330 C90,300 85,270 90,240 C95,210 105,180 115,150 C125,120 130,90 140,70 C150,50 165,35 180,30 C195,25 210,30 220,45 C230,60 235,80 240,100 C245,120 250,140 255,160 C260,180 265,200 270,220 C275,240 280,260 285,280 C290,300 295,320 300,340 C305,360 310,380 315,400 C320,420 315,440 300,455 C285,470 265,480 245,485 C225,490 200,485 180,480 Z"
-                  fill="rgba(255,255,255,0.15)"
-                  stroke="rgba(255,255,255,0.2)"
-                  strokeWidth="1"
-                />
-                {/* Scotland */}
-                <path
-                  d="M160,30 C150,20 145,10 150,5 C155,0 165,2 175,8 C185,14 195,22 200,30 C205,38 200,45 190,48 C180,51 170,45 160,30 Z"
-                  fill="rgba(255,255,255,0.15)"
-                  stroke="rgba(255,255,255,0.2)"
-                  strokeWidth="1"
-                />
-              </svg>
-            </div>
-
             {/* Compass / orientation hint */}
-            <div className="absolute top-4 left-4 flex items-center gap-2 text-neutral-600 text-xs">
+            <div className="absolute top-4 left-4 flex items-center gap-2 text-neutral-600 text-xs z-5 pointer-events-none">
               <MapPin size={12} />
               <span>United Kingdom</span>
             </div>
 
             {loadingClinics && (
-              <div className="absolute inset-0 flex items-center justify-center">
+              <div className="absolute inset-0 flex items-center justify-center z-10">
                 <div className="text-neutral-500 text-sm">Loading clinics…</div>
               </div>
             )}
@@ -534,7 +519,7 @@ export default function PrivateDemoPage() {
                     placeholder="Anything we should prepare or be aware of?"
                     value={form.notes}
                     onChange={(e) => setForm({ ...form, notes: e.target.value })}
-                    className="w-full rounded-2xl bg-white/[0.02] border border-white/[0.06] px-4 py-3 text-white placeholder-neutral-600 outline-none focus:border-white/20 focus:bg-white/[0.03] transition-all duration-300 text-sm"
+                    className="w-full rounded-2xl bg-white/[0.02] border border-white/[0.06] px-4 py-3 text-white placeholder-neutral-600 outline-none focus:border-white/20 focus:bg-white/[0.03] transition-all duration-200"
                   />
                 </label>
 
@@ -542,15 +527,15 @@ export default function PrivateDemoPage() {
                 <div className="rounded-2xl border border-white/[0.06] p-5 bg-white/[0.02] space-y-3">
                   <label className="flex items-start gap-3 cursor-pointer group">
                     <input type="checkbox" className="mt-1 accent-white" checked={agreeTerms} onChange={(e) => setAgreeTerms(e.target.checked)} required />
-                    <span className="text-sm text-neutral-400 group-hover:text-neutral-300 transition-colors duration-200">I agree to the <a href="#" className="text-white hover:underline">Terms & Conditions</a>.</span>
+                    <span className="text-sm text-neutral-400 group-hover:text-neutral-300 transition-colors duration-200">I agree to the <a href="#" className="text-white hover:underline">Terms & Conditions</a></span>
                   </label>
                   <label className="flex items-start gap-3 cursor-pointer group">
                     <input type="checkbox" className="mt-1 accent-white" checked={agreePrivacy} onChange={(e) => setAgreePrivacy(e.target.checked)} required />
-                    <span className="text-sm text-neutral-400 group-hover:text-neutral-300 transition-colors duration-200">I agree to how ReArm will use my information as described in the <a href="#" className="text-white hover:underline">Privacy Notice</a>.</span>
+                    <span className="text-sm text-neutral-400 group-hover:text-neutral-300 transition-colors duration-200">I agree to how ReArm will use my information as described in the <a href="#" className="text-white hover:underline">Privacy Policy</a></span>
                   </label>
                   <label className="flex items-start gap-3 cursor-pointer group">
                     <input type="checkbox" className="mt-1 accent-white" checked={agreeMarketing} onChange={(e) => setAgreeMarketing(e.target.checked)} />
-                    <span className="text-sm text-neutral-400 group-hover:text-neutral-300 transition-colors duration-200">I agree to receive occasional product updates and marketing emails (optional).</span>
+                    <span className="text-sm text-neutral-400 group-hover:text-neutral-300 transition-colors duration-200">I agree to receive occasional product updates and marketing emails (optional)</span>
                   </label>
                 </div>
 
